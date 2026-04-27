@@ -1,0 +1,2 @@
+grpcio==1.80.0
+typing_extensions==4.15.0
