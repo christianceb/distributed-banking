@@ -3,9 +3,9 @@
 import grpc
 import warnings
 
-import helloworld_pb2 as helloworld__pb2
+from . import helloworld_pb2 as helloworld__pb2
 
-GRPC_GENERATED_VERSION = '1.80.0'
+GRPC_GENERATED_VERSION = '1.66.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in helloworld_pb2_grpc.py depends on'
+        + f' but the generated code in helloworld_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class GreeterStub(object):
+class GreeterStub:
     """The greeting service definition.
     """
 
@@ -36,18 +36,23 @@ class GreeterStub(object):
             channel: A grpc.Channel.
         """
         self.SayHello = channel.unary_unary(
-                '/Greeter/SayHello',
+                '/helloworld.Greeter/SayHello',
                 request_serializer=helloworld__pb2.HelloRequest.SerializeToString,
                 response_deserializer=helloworld__pb2.HelloReply.FromString,
                 _registered_method=True)
-        self.SayHelloAgain = channel.unary_unary(
-                '/Greeter/SayHelloAgain',
+        self.SayHelloStreamReply = channel.unary_stream(
+                '/helloworld.Greeter/SayHelloStreamReply',
+                request_serializer=helloworld__pb2.HelloRequest.SerializeToString,
+                response_deserializer=helloworld__pb2.HelloReply.FromString,
+                _registered_method=True)
+        self.SayHelloBidiStream = channel.stream_stream(
+                '/helloworld.Greeter/SayHelloBidiStream',
                 request_serializer=helloworld__pb2.HelloRequest.SerializeToString,
                 response_deserializer=helloworld__pb2.HelloReply.FromString,
                 _registered_method=True)
 
 
-class GreeterServicer(object):
+class GreeterServicer:
     """The greeting service definition.
     """
 
@@ -58,9 +63,14 @@ class GreeterServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def SayHelloAgain(self, request, context):
-        """Sends another greeting
-        """
+    def SayHelloStreamReply(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SayHelloBidiStream(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -73,20 +83,25 @@ def add_GreeterServicer_to_server(servicer, server):
                     request_deserializer=helloworld__pb2.HelloRequest.FromString,
                     response_serializer=helloworld__pb2.HelloReply.SerializeToString,
             ),
-            'SayHelloAgain': grpc.unary_unary_rpc_method_handler(
-                    servicer.SayHelloAgain,
+            'SayHelloStreamReply': grpc.unary_stream_rpc_method_handler(
+                    servicer.SayHelloStreamReply,
+                    request_deserializer=helloworld__pb2.HelloRequest.FromString,
+                    response_serializer=helloworld__pb2.HelloReply.SerializeToString,
+            ),
+            'SayHelloBidiStream': grpc.stream_stream_rpc_method_handler(
+                    servicer.SayHelloBidiStream,
                     request_deserializer=helloworld__pb2.HelloRequest.FromString,
                     response_serializer=helloworld__pb2.HelloReply.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'Greeter', rpc_method_handlers)
+            'helloworld.Greeter', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('Greeter', rpc_method_handlers)
+    server.add_registered_method_handlers('helloworld.Greeter', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class Greeter(object):
+class Greeter:
     """The greeting service definition.
     """
 
@@ -104,7 +119,7 @@ class Greeter(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Greeter/SayHello',
+            '/helloworld.Greeter/SayHello',
             helloworld__pb2.HelloRequest.SerializeToString,
             helloworld__pb2.HelloReply.FromString,
             options,
@@ -118,7 +133,7 @@ class Greeter(object):
             _registered_method=True)
 
     @staticmethod
-    def SayHelloAgain(request,
+    def SayHelloStreamReply(request,
             target,
             options=(),
             channel_credentials=None,
@@ -128,10 +143,37 @@ class Greeter(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(
+        return grpc.experimental.unary_stream(
             request,
             target,
-            '/Greeter/SayHelloAgain',
+            '/helloworld.Greeter/SayHelloStreamReply',
+            helloworld__pb2.HelloRequest.SerializeToString,
+            helloworld__pb2.HelloReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SayHelloBidiStream(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(
+            request_iterator,
+            target,
+            '/helloworld.Greeter/SayHelloBidiStream',
             helloworld__pb2.HelloRequest.SerializeToString,
             helloworld__pb2.HelloReply.FromString,
             options,
