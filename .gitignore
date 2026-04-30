@@ -222,3 +222,4 @@ __marimo__/
 # --- Custom .gitignore lines below
 *.db
 NOTEBOOK.md
+*/**/symlinked/*.py*
