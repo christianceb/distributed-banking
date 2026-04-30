@@ -1,8 +1,7 @@
 import logging
-
 import grpc
-import helloworld_pb2
-import helloworld_pb2_grpc
+from symlinked import helloworld_pb2
+from symlinked import helloworld_pb2_grpc
 
 
 def run():
