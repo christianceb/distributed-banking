@@ -4,11 +4,12 @@ import logging
 import grpc
 import helloworld_pb2
 import helloworld_pb2_grpc
+from symlinked import helloworld_pb2 as aliased
 
 
 class Greeter(helloworld_pb2_grpc.GreeterServicer):
     def SayHello(self, request, context):
-        return helloworld_pb2.HelloReply(message="Hello, %s!" % request.name)
+        return aliased.HelloReply(message="Hello, %s!" % request.name)
 
 
 def serve():
