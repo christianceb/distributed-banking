@@ -222,7 +222,6 @@ __marimo__/
 # --- Custom .gitignore lines below
 *.db
 NOTEBOOK.md
-*/**/symlinked
 
 # Protoc generated code
 */**/helloworld_pb2**.py
