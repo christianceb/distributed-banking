@@ -224,4 +224,4 @@ __marimo__/
 NOTEBOOK.md
 
 # Protoc generated code
-*/**/helloworld_pb2**.py
+*/**/helloworld_pb2**.py*
