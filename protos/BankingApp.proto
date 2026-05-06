@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+service BankingApp {
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+
+  // It may be worthwhile to make this streaming data from the backend
+  rpc GetAccountDetailsByToken (PublicAccountDetailsRequest) returns (PublicAccountDetailsResponse) {}
+
+  // Transactions
+  rpc GetTransactionsByToken (TransactionsRequest) returns (TransactionsResponse) {}
+  rpc GetTransactionById (TransactionRequest) returns (TransactionsResponse) {}
+
+  // Estimate Payment Intent
+  rpc GetPaymentIntentEstimate (PaymentIntentEstimateRequest) returns (PaymentIntentEstimateResponse) {}
+
+  // Make Payment
+  rpc PostPaymentIntent (PublicPostPaymentIntentRequest) returns (PublicPaymentIntentStoreResponse) {}
+}
+
+// ---
+// Requests
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message PublicAccountDetailsRequest {
+  string token = 1;
+}
+
+message TransactionsRequest {
+  string token = 1;
+}
+
+message PaymentIntentEstimateRequest {
+  uint64 amount = 1;
+}
+
+message PublicPostPaymentIntentRequest {
+  string token = 1;
+  uint64 amount = 2;
+  uint64 recipient_account_id = 3;
+}
+
+// ---
+// Response
+message LoginResponse {
+  string token = 1;
+}
+
+message PublicAccountDetailsResponse {
+  optional PublicAccountDetails = 1;
+}
+
+message TransactionsResponse {
+  repeated PublicTransaction = 1;
+}
+
+message PaymentIntentEstimateResponse {
+  uint64 fees = 1;
+}
+
+message PublicPaymentIntentStoreResponse {
+  PublicTransaction transaction = 1;
+}
+
+// ---
+// Models
+message PublicAccountDetails {
+  uint64 id = 1;
+  int64 user_id = 2;
+  int64 current_balance = 3;
+  int64 available_balance = 4;
+  uint64 updated_at = 5;
+}
+
+message PublicTransaction {
+  uint64 id = 1;
+  uint64 amount = 2;
+  uint64 fee 3;
+  int64 source_account_id = 4;
+  int64 recipient_account_id = 5;
+  int32 status = 6; // -1 = failed; 0 = pending; 1 = success
+  uint64 updated_at = 8;
+}

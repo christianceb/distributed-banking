@@ -36,7 +36,7 @@ def createUsers():
                 primary key autoincrement,
         username varchar(255) not null,
         password varchar(255) not null,
-        token    integer
+        token    integer # we don't need to handle tokens in BDB, do it instead in BAS as in-memory
     );
     """
     pass

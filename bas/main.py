@@ -26,11 +26,15 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
         )
     
     def Bump(self, request: helloworld_pb2.BumpRequest, context):
+        print("Received a bump request")
+
         for _ in range(request.count):
             time.sleep(randrange(1,3))
             self.bumpbump()
 
         result = [helloworld_pb2.Bump(timestamp=timestampNs) for timestampNs in self.queried]
+
+        print("Going to return BumpResponse")
 
         return helloworld_pb2.BumpResponse(result=result)
 

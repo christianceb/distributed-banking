@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+service InternalBanking {
+  rpc GetUserRecordsByCredentials (UserCredentialsRequest) returns (UserResponse) {}
+
+  rpc GetAccountById (GetAccountByIdRequest) returns (AccountResponse) {}
+
+  // Transactions
+  rpc GetTransactionsByAccountId (TransactionsByAccountIdRequest) returns (TransactionsResponse) {}
+  rpc GetTransactionById (TransactionRequest) returns (TransactionsResponse) {}
+
+  // Store Payment Intent as transaction
+  rpc StorePaymentIntent (PaymentIntentRequest) returns (PaymentIntentResponse) {}
+
+  // Log something
+  rpc PostLog (LogRequest) returns (LogResponse) {}
+}
+
+// ---
+// Requests
+message UserCredentialsRequest {
+  string username = 1;
+  string hashed_password = 2;
+}
+
+message GetAccountByIdRequest {
+  uint64 id = 1;
+}
+
+message TransactionsByAccountIdRequest {
+  uint64 id = 1;
+}
+
+message LogRequest {
+  string kind = 1;
+  string message = 2;
+}
+
+message PaymentIntentRequest {
+  uint64 amount = 1;
+  uint64 fees = 2;
+  uint64 user_id = 3;
+}
+
+// ---
+// Responses
+message UserResponse {
+  bool found = 1;
+  optional User = 2;
+  optional Account = 3;
+  repeated Transactions = 4;
+}
+
+message AccountResponse {
+  optional Account = 1;
+}
+
+message TransactionsResponse {
+  repeated Transactions = 1;
+}
+
+message LogResponse {
+  bool success = 1;
+  Log log = 2;
+}
+
+message PaymentIntentResponse {
+  bool success = 1;
+  optional Transaction = 2;
+}
+
+// ---
+// Models
+message User {
+  uint64 id = 1;
+  string username = 2;
+}
+
+message Account {
+  uint64 id = 1;
+  int64 user_id = 2;
+  int64 current_balance = 3;
+  int64 available_balance = 4;
+  uint64 updated_at = 5;
+}
+
+message Log {
+  uint64 id = 1;
+  uint64 timestamp = 2;
+  string kind = 3;
+  string message = 4;
+}
+
+message Transaction {
+  uint64 id = 1;
+  uint64 amount = 2;
+  uint64 fee 3;
+  int64 source_account_id = 4;
+  int64 recipient_account_id = 5;
+  int32 status = 6; // -1 = failed; 0 = pending; 1 = success
+  uint64 updated_at = 7;
+  uint64 tries = 8;
+}
