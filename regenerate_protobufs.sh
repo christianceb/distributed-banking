@@ -16,7 +16,7 @@ python -m grpc_tools.protoc \
     --python_out=./bc \
     --pyi_out=./bc \
     --grpc_python_out=./bc \
-    ./protos/helloworld.proto
+    ./protos/BankingApp.proto
 
 # Regenerate for BAS
 
@@ -25,5 +25,5 @@ python -m grpc_tools.protoc \
     --python_out=./bas \
     --pyi_out=./bas \
     --grpc_python_out=./bas \
-    ./protos/helloworld.proto
+    ./protos/BankingApp.proto
 

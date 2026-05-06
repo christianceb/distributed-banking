@@ -225,3 +225,4 @@ NOTEBOOK.md
 
 # Protoc generated code
 */**/helloworld_pb2**.py*
+*/**/BankingApp_pb2**.py*
