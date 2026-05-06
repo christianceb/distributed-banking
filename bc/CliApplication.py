@@ -1,4 +1,4 @@
-from bc import BasService
+from BasService import BasService
 
 
 class CliApplication:
@@ -7,11 +7,11 @@ class CliApplication:
     EXIT: int = 100000
     EXIT_AS_STRING: str = "x"
 
-    basService = None
-    session = None
+    bas_service: BasService = None
+    session_token = None
 
     def __init__(self, basService: BasService):
-        self.basService = basService
+        self.bas_service = basService
 
         self.entrypoint()
 
@@ -19,13 +19,23 @@ class CliApplication:
         self.login()
 
     def login(self):
-        while self.session is None:
-            username_input = "", password_input = ""
+        while self.session_token is None:
+            username_input = ""
+            password_input = ""
             
             username_input = input("\nEnter username: ")
             password_input = input("\nEnter password: ")
 
-            
+            try:
+                self.session_token = self.bas_service.login(username_input, password_input)
+
+                break;
+            except:
+                print("Failed to login. Check credentials.")
+                continue
+
+        print("logged in with token: " + self.session_token)
+        pass
 
     def printAccountOverview(self):
         pass
