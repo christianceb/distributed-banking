@@ -13,8 +13,10 @@ class GrpcBackend(BankingAppServicer):
     def generateAuthToken(self, entropy: list[str]) -> str:
         return ";".join(entropy)
 
-    def login(self, request: LoginRequest, context):
+    def Login(self, request: LoginRequest, context):
         response = LoginResponse()
+        
         response.token = self.generateAuthToken([request.username, request.password])
+        response.success = True
 
         return response

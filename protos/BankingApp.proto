@@ -50,6 +50,7 @@ message PublicPostPaymentIntentRequest {
 // Response
 message LoginResponse {
   string token = 1;
+  bool success = 2;
 }
 
 message PublicAccountDetailsResponse {
