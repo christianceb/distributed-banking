@@ -24,7 +24,7 @@ class CliApplication:
             password_input = ""
             
             username_input = input("\nEnter username: ")
-            password_input = input("\nEnter password: ")
+            password_input = input("Enter password: ")
 
             try:
                 self.session_token = self.bas_service.login(username_input, password_input)
@@ -34,16 +34,19 @@ class CliApplication:
                 print("Failed to login. Check credentials.")
                 continue
 
-        print("logged in with token: " + self.session_token)
-        pass
+        print("\nLogged in as: " + "REPLACE_WITH_USERNAME")
+
+        self.mainMenu()
 
     def printAccountOverview(self):
-        pass
+        print("ACCOUNT_OVERVIEW_GOES_HERE")
 
     def printTransactions(self):
         pass
 
     def mainMenu(self):
+        keyboard_interrupt = False
+
         MAIN_MENU = 1
         VIEW_TRANSACTIONS = 2
         MAKE_PAYMENT = 3
@@ -53,13 +56,16 @@ class CliApplication:
         menu_options: list[str] = [
             "[1] Reload this screen (refresh balance)",
             "[2] View Transactions",
-            "[4] Make a payment",
+            "[3] Make a payment",
             "[X] Exit Application"
         ]
 
         choice: int = self.WAITING_INPUT
 
         while choice is self.WAITING_INPUT:
+            if keyboard_interrupt:
+                break
+
             print("\n---\n")
 
             self.printAccountOverview()
@@ -72,13 +78,19 @@ class CliApplication:
                 print("- " + menu_option)
 
             while choice is self.WAITING_INPUT:
+                if keyboard_interrupt:
+                    break
+
                 try:
                     string_choice = input("\nEnter choice: ")
 
-                    if str.lower(choice) is self.EXIT_AS_STRING:
+                    if str.lower(string_choice) == self.EXIT_AS_STRING:
                         choice = self.EXIT
                     else:
                         choice: int = int(string_choice)
+                except KeyboardInterrupt:
+                    keyboard_interrupt = True
+                    break
                 except:
                     choice = self.WAITING_INPUT
 

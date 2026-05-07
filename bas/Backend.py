@@ -2,6 +2,7 @@ from concurrent import futures
 from BankingApp_pb2_grpc import add_BankingAppServicer_to_server
 from GrpcBackend import GrpcBackend
 from grpc import Channel, Server
+from UserTokenService import UserTokenService
 import grpc
 
 
@@ -16,7 +17,7 @@ class Backend:
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         
         add_BankingAppServicer_to_server(
-            GrpcBackend("TODO_yeah_a_service_should_be_here"),
+            GrpcBackend("TODO_yeah_a_service_should_be_here", userTokenService=UserTokenService()),
             self.server
         )
         
