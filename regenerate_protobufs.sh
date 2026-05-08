@@ -27,3 +27,12 @@ python -m grpc_tools.protoc \
     --grpc_python_out=./bas \
     ./protos/BankingApp.proto
 
+# Regenerate for BDB
+
+python -m grpc_tools.protoc \
+    -I ./protos \
+    --python_out=./bdb \
+    --pyi_out=./bdb \
+    --grpc_python_out=./bdb \
+    ./protos/BankingApp.proto
+
