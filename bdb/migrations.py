@@ -1,6 +1,5 @@
 import os.path
 import sqlite3
-import time
 
 database_file = "store.db"
 
@@ -115,19 +114,6 @@ def clearMigrateSeed():
             (2, 100000, 'BROUGHT_FORWARD'),
             (3, 100000, 'BROUGHT_FORWARD');
     """)
-    connection.commit()
-
-    time.sleep(5)
-
-    # Test update statement
-    cursor.execute("""
-        UPDATE accounts SET current_balance=?, available_balance=? WHERE id = ?;
-    """, (1000, 999, 1))
-
-    cursor.execute("""
-        UPDATE transactions SET tries = ? WHERE id = ?;
-    """, (69, 1))
-
     connection.commit()
 
     connection.close()
