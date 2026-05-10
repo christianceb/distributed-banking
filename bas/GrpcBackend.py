@@ -1,17 +1,8 @@
-import sqlite3
 from typing import Optional
-
 from BankingApp_pb2 import LoginRequest, LoginResponse, PublicAccountDetailsRequest, PublicAccountDetailsResponse, TransactionRequest, TransactionsRequest, TransactionsResponse
 from BankingApp_pb2_grpc import BankingAppServicer
 from UserTokenService import UserToken, UserTokenService
 from BankingDatabaseService import BankingDatabaseService
-
-def interceptor(func):
-    def inner(*args, **kwargs):
-        print("Replacement for worker goes here")
-        return func(*args, **kwargs)
-
-    return inner
 
 class GrpcBackend(BankingAppServicer):
     data_service: BankingDatabaseService = None;
@@ -21,7 +12,6 @@ class GrpcBackend(BankingAppServicer):
         self.data_service = dataService
         self.user_token_service = userTokenService
 
-    @interceptor
     def Login(self, request: LoginRequest, context) -> LoginResponse:
         response = LoginResponse()
 
@@ -39,14 +29,11 @@ class GrpcBackend(BankingAppServicer):
     def ValidateToken(self, token) -> Optional[UserToken]:
         return self.user_token_service.FindToken(token)
 
-    @interceptor
     def GetAccountDetailsByToken(self, request: PublicAccountDetailsRequest, context) -> PublicAccountDetailsResponse:
         pass
 
-    @interceptor
     def GetTransactionsByToken(self, request: TransactionsRequest, context) -> TransactionsResponse:
         pass
 
-    @interceptor
     def GetTransactionById(self, request: TransactionRequest, context) -> TransactionsResponse:
         pass

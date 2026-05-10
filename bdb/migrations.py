@@ -14,6 +14,9 @@ def clearMigrateSeed():
     Migrate
     """
     connection = sqlite3.connect("store.db")
+
+    connection.execute('pragma journal_mode=wal')
+
     cursor = connection.cursor()
 
     cursor.execute("""
