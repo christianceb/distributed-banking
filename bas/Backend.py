@@ -5,6 +5,8 @@ from grpc import Channel, Server
 from UserTokenService import UserTokenService
 import grpc
 
+from BankingDatabaseService import BankingDatabaseService
+
 
 class Backend:
     port = "50051"
@@ -17,7 +19,10 @@ class Backend:
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         
         add_BankingAppServicer_to_server(
-            GrpcBackend("TODO_yeah_a_service_should_be_here", userTokenService=UserTokenService()),
+            GrpcBackend(
+                BankingDatabaseService("localhost:50061"),
+                UserTokenService()
+            ),
             self.server
         )
         
@@ -25,6 +30,6 @@ class Backend:
         
         self.server.start()
         
-        print("Server started, listening on " + self.port)
+        print("BAS Server started, listening on " + self.port)
         
         self.server.wait_for_termination()

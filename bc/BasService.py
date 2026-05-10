@@ -7,13 +7,13 @@ from BankingApp_pb2 import LoginRequest, LoginResponse
 
 class BasService:
     channel: Channel
-    connectionString: str
+    connection_string: str
     stub: BankingAppStub
 
-    def __init__(self, basConnectionString: str):
-        self.connectionString = basConnectionString
+    def __init__(self, bas_connection_string: str):
+        self.connection_string = bas_connection_string
 
-        self.channel = grpc.insecure_channel(self.connectionString)
+        self.channel = grpc.insecure_channel(self.connection_string)
         self.stub = BankingAppStub(self.channel)
 
     def login(self, username: str , password: str) -> str:

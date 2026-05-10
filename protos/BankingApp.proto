@@ -33,7 +33,7 @@ message TransactionsRequest {
 }
 
 message TransactionRequest {
-  string transaction_id = 1;
+  uint64 transaction_id = 1;
 }
 
 message PaymentIntentEstimateRequest {

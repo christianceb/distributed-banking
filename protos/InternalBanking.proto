@@ -6,8 +6,8 @@ service InternalBanking {
   rpc GetAccountById (GetAccountByIdRequest) returns (AccountResponse) {}
 
   // Transactions
-  rpc GetTransactionsByAccountId (TransactionsByAccountIdRequest) returns (TransactionsResponse) {}
-  rpc GetTransactionById (TransactionRequest) returns (TransactionsResponse) {}
+  rpc GetTransactionsByAccountId (InternalTransactionsByAccountIdRequest) returns (InternalTransactionsResponse) {}
+  rpc GetTransactionById (InternalTransactionRequest) returns (InternalTransactionsResponse) {}
 
   // Store Payment Intent as transaction
   rpc StorePaymentIntent (PaymentIntentRequest) returns (PaymentIntentResponse) {}
@@ -20,14 +20,18 @@ service InternalBanking {
 // Requests
 message UserCredentialsRequest {
   string username = 1;
-  string hashed_password = 2;
+  string password = 2;
 }
 
 message GetAccountByIdRequest {
   uint64 id = 1;
 }
 
-message TransactionsByAccountIdRequest {
+message InternalTransactionsByAccountIdRequest {
+  uint64 id = 1;
+}
+
+message InternalTransactionRequest {
   uint64 id = 1;
 }
 
@@ -46,17 +50,17 @@ message PaymentIntentRequest {
 // Responses
 message UserResponse {
   bool found = 1;
-  optional User = 2;
-  optional Account = 3;
-  repeated Transactions = 4;
+  optional User user = 2;
+  //optional Account account = 3;
+  //repeated Transaction transactions = 4;
 }
 
 message AccountResponse {
-  optional Account = 1;
+  optional Account account = 1;
 }
 
-message TransactionsResponse {
-  repeated Transactions = 1;
+message InternalTransactionsResponse {
+  repeated Transaction transactions = 1;
 }
 
 message LogResponse {
@@ -66,7 +70,7 @@ message LogResponse {
 
 message PaymentIntentResponse {
   bool success = 1;
-  optional Transaction = 2;
+  optional Transaction transaction = 2;
 }
 
 // ---
@@ -94,10 +98,10 @@ message Log {
 message Transaction {
   uint64 id = 1;
   uint64 amount = 2;
-  uint64 fee 3;
+  uint64 fee = 3;
   int64 source_account_id = 4;
   int64 recipient_account_id = 5;
-  int32 status = 6; // -1 = failed; 0 = pending; 1 = success
+  string status = 6;
   uint64 updated_at = 7;
   uint64 tries = 8;
 }

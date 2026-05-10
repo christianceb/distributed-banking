@@ -22,7 +22,7 @@ class UserTokenService:
         if user_token is None:
             user_token = UserToken()
 
-            user_token.user_id = user_id=user_id,
+            user_token.user_id = user_id,
             user_token.token = draft_token
 
             self.user_tokens.append(user_token)
