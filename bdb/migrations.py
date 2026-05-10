@@ -1,5 +1,6 @@
 import os.path
 import sqlite3
+import time
 
 database_file = "store.db"
 
@@ -67,6 +68,23 @@ def clearMigrateSeed():
     """)
     connection.commit()
 
+    # Triggers
+    cursor.execute("""
+        CREATE TRIGGER update_account_timestamp UPDATE OF current_balance, available_balance ON accounts
+        BEGIN
+            UPDATE accounts SET updated_at = (strftime('%s','now')) WHERE accounts.id = old.id AND accounts.updated_at = old.updated_at;
+        END;
+    """)
+
+    cursor.execute("""
+        CREATE TRIGGER update_transactions_timestamp UPDATE OF status, available_balance, tries ON transactions
+        BEGIN
+            UPDATE transactions SET updated_at = (strftime('%s','now')) WHERE transactions.id = old.id AND transactions.updated_at = old.updated_at;
+        END;
+    """)
+
+    connection.commit()
+
     """
     Seed
     """
@@ -84,10 +102,10 @@ def clearMigrateSeed():
         insert into accounts
             (user_id, current_balance, available_balance)
         values
-            (1, 0, 0),
-            (2, 0, 0),
-            (3, 0, 0);
-    """)
+            (?, ?, ?),
+            (?, ?, ?),
+            (?, ?, ?);
+    """, (1, 0, 0, 2, 0, 0, 3, 0, 0))
     connection.commit()
 
     cursor.execute("""
@@ -97,6 +115,19 @@ def clearMigrateSeed():
             (2, 100000, 'BROUGHT_FORWARD'),
             (3, 100000, 'BROUGHT_FORWARD');
     """)
+    connection.commit()
+
+    time.sleep(5)
+
+    # Test update statement
+    cursor.execute("""
+        UPDATE accounts SET current_balance=?, available_balance=? WHERE id = ?;
+    """, (1000, 999, 1))
+
+    cursor.execute("""
+        UPDATE transactions SET tries = ? WHERE id = ?;
+    """, (69, 1))
+
     connection.commit()
 
     connection.close()
