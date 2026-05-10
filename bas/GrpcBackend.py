@@ -15,13 +15,13 @@ class GrpcBackend(BankingAppServicer):
     def Login(self, request: LoginRequest, context) -> LoginResponse:
         response = LoginResponse()
 
-        maybe_user_id = self.data_service.validate_user(request.username, request.password)
+        user_response = self.data_service.validate_user(request.username, request.password)
 
         response.token = ""
         response.success = False
 
-        if maybe_user_id is not None:
-            response.token = self.user_token_service.GenerateUserToken(maybe_user_id, [str(maybe_user_id), request.username, request.password])
+        if user_response is not None:
+            response.token = self.user_token_service.GenerateUserToken(user_response.user, [str(user_response.user), request.username, request.password])
             response.success = True
 
         return response

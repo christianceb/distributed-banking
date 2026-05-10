@@ -51,7 +51,7 @@ message PaymentIntentRequest {
 message UserResponse {
   bool found = 1;
   optional User user = 2;
-  //optional Account account = 3;
+  optional Account account = 3;
   //repeated Transaction transactions = 4;
 }
 

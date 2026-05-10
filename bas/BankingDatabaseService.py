@@ -17,10 +17,10 @@ class BankingDatabaseService:
 
         print("BAS is listening to BDB via " + bdb_connection_string)
 
-    def validate_user(self, username: str , password: str) -> Optional[int]:
+    def validate_user(self, username: str , password: str):
         request: UserResponse =  self.stub.GetUserRecordsByCredentials(UserCredentialsRequest(username=username, password=password))
 
-        return request.user.id if request.found else None
+        return request if request.found else None
     
     def __del__(self):
         # Prevent dangling connections which may exhaust connection pool threads

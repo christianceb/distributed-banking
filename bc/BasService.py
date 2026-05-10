@@ -2,7 +2,7 @@ from grpc import Channel
 import grpc
 
 from BankingApp_pb2_grpc import BankingAppStub
-from BankingApp_pb2 import LoginRequest, LoginResponse
+from BankingApp_pb2 import LoginRequest, LoginResponse, PublicAccountDetailsRequest, PublicAccountDetailsResponse
 
 
 class BasService:
@@ -24,6 +24,14 @@ class BasService:
 
         return response.token
     
+    def get_account_by_token(self, token: str):
+        response: PublicAccountDetailsResponse = self.stub.Login(PublicAccountDetailsRequest(token=token))
+
+        if len(response.accounts):
+            return response.accounts[0]
+
+        return None
+
     def __del__(self):
         # Prevent dangling connections which may exhaust connection pool threads
         self.channel.close()

@@ -1,4 +1,5 @@
 from BasService import BasService
+from CurrencyHelper import int_cents_to_localised
 
 
 class CliApplication:
@@ -39,7 +40,10 @@ class CliApplication:
         self.mainMenu()
 
     def printAccountOverview(self):
-        print("ACCOUNT_OVERVIEW_GOES_HERE")
+        overview = self.bas_service.get_account_by_token(self.session_token)
+
+        print("Account current balance: " + int_cents_to_localised(overview.current_balance))
+        print("Account available balance: " + int_cents_to_localised(overview.available_balance))
 
     def printTransactions(self):
         pass

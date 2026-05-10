@@ -17,8 +17,14 @@ class BankingService:
 
         pass
 
-    def get_transactions(self, account_id):
-        pass
+    def get_transactions_by_account_id(self, account_id):
+        connection = self.init_data_store()
+
+        cursor = connection.cursor()
+        
+        cursor.execute('SELECT * FROM transactions WHERE id=? ORDER BY timestamp DESC', (id,))
+
+        return cursor.fetchall()
 
     def init_data_store(self) -> sqlite3.Connection:
         if self.db_connection is None:
@@ -44,6 +50,15 @@ class BankingService:
             return rows[0]['id']
         else:
             return None
+
+    def get_account_by_user_id(self, user_id):
+        connection = self.init_data_store()
+
+        cursor = connection.cursor()
+        
+        cursor.execute('SELECT * FROM accounts WHERE user_id=?', (user_id,))
+
+        return cursor.fetchone()
 
     def get_account(self, account_id):
         connection = self.init_data_store()

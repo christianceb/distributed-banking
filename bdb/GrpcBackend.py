@@ -26,13 +26,17 @@ class GrpcBackend(InternalBankingServicer):
         if user_id is not None:
             response.found = True
             response.user.id = user_id
-            
-            # TBD
-            # response.account.id = account.id
-            # response.account.current_balance = account.current_balance
-            # response.account.available_balance = account.available_balance
-            # response.account.updated_at = account.updated_at
 
-            # response.transactions = []
+            # There currently is a 1:1 relationship with user and account
+            account = self.banking_service.get_account_by_user_id(user_id)
+
+            response.account.id = account['id']
+            response.account.current_balance = account['current_balance']
+            response.account.available_balance = account['available_balance']
+            response.account.updated_at = account['updated_at']
+
+            # May need to transform this
+            response.transactions = []
+            # response.transactions = [self.banking_service.get_transactions_by_account_id(account['id'])]
 
         return response
