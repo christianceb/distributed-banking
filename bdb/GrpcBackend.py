@@ -13,7 +13,7 @@ class GrpcBackend(InternalBankingServicer):
     banking_service: BankingService
 
     def __init__(self):
-        self.banking_service = BankingService()
+        self.banking_service = BankingService(None)
 
     # @interceptor
     def GetUserRecordsByCredentials(self, request: UserCredentialsRequest, context) -> UserResponse:

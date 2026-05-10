@@ -1,15 +1,35 @@
 import time
 
+from BankingService import BankingService
+from dependencies import database
 from migrations import clearMigrateSeed
 
+
+def worker_task():
+    try:
+        connection = database()
+
+        banking_service = BankingService(connection)
+
+        banking_service.process_transactions()
+    except Exception as e:
+        raise e
+    finally:
+        connection.close()
+        print("Terminated DB connection")
 
 def worker():
     seconds = 5
 
-    print("Terminate worker with CTRL+C")
-
     while True:
-        time.sleep(seconds)
+        try:
+            print("Worker processing job. Terminate worker with CTRL+C")
+            
+            worker_task()
+            
+            time.sleep(seconds)
+        except KeyboardInterrupt:
+            break;
 
 def migrations():
     """
@@ -20,6 +40,7 @@ def migrations():
 
 def main():
     print("Run as:\n")
+
     print("[1] Worker")
     print("[2] Migrations")
     print("[any other key] to exit")

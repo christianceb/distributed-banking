@@ -1,6 +1,8 @@
 import os.path
 import sqlite3
 
+from dependencies import database
+
 database_file = "store.db"
 
 def clearMigrateSeed():
@@ -13,10 +15,7 @@ def clearMigrateSeed():
     """
     Migrate
     """
-    connection = sqlite3.connect("store.db")
-
-    connection.execute('pragma journal_mode=wal')
-
+    connection = database()
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -50,7 +49,7 @@ def clearMigrateSeed():
             amount integer not null,
             status varchar(255) default 'PENDING' not null,
             balance integer,
-            fee integer,
+            fees integer,
             kind varchar(255) not null,
             tries integer default 0 not null,
             timestamp unixepoch default (strftime('%s','now')) not null,
@@ -72,14 +71,14 @@ def clearMigrateSeed():
 
     # Triggers
     cursor.execute("""
-        CREATE TRIGGER update_account_timestamp UPDATE OF current_balance, available_balance ON accounts
+        CREATE TRIGGER update_account_updated_at UPDATE OF current_balance, available_balance ON accounts
         BEGIN
             UPDATE accounts SET updated_at = (strftime('%s','now')) WHERE accounts.id = old.id AND accounts.updated_at = old.updated_at;
         END;
     """)
 
     cursor.execute("""
-        CREATE TRIGGER update_transactions_timestamp UPDATE OF status, available_balance, tries ON transactions
+        CREATE TRIGGER update_transactions_updated_at UPDATE OF status, available_balance, tries ON transactions
         BEGIN
             UPDATE transactions SET updated_at = (strftime('%s','now')) WHERE transactions.id = old.id AND transactions.updated_at = old.updated_at;
         END;
@@ -118,6 +117,15 @@ def clearMigrateSeed():
             (3, 100000, 'BROUGHT_FORWARD');
     """)
     connection.commit()
+
+    """
+    # Test transaction for processing transfers
+    INSERT INTO transactions
+        (source_account_id, destination_account_id, amount, fees, kind)
+    VALUES
+        (2, 3, 10000, 100, 'TRANSFER');
+    UPDATE accounts SET available_balance=89900 WHERE id=2
+    """
 
     connection.close()
 
