@@ -3,6 +3,7 @@ from typing import Optional
 from BasService import BasService
 from CurrencyHelper import int_cents_to_localised
 from Common import unix_timestamp_s, unix_timestamp_to_iso8601
+from Models import Transaction
 
 class User:
     id: int
@@ -153,6 +154,23 @@ class CliApplication:
         REFRESH_SCREEN = "r"
         VIEW_TRANSACTION = "v"
 
+        transactions: list[Transaction] = self.bas_service.get_transactions_by_token(self.session_data.token)
+
+        for transaction in transactions:
+            print(f"""
+---
+Transaction Id: {transaction.id}
+Amount: {transaction.amount}
+Source Account ID: {transaction.source_account_id}
+Destination Account ID: {transaction.destination_account_id}
+Status: {transaction.status}
+Balance: {transaction.balance}
+Fees: {transaction.fees}
+Kind: {transaction.fees}
+Timestamp: {transaction.timestamp}
+---
+                  """)
+
         valid_options = [REFRESH_SCREEN, VIEW_TRANSACTION, self.EXIT]
 
         menu_options: list[str] = [
@@ -160,7 +178,10 @@ class CliApplication:
             "[V] View a Transaction by Transaction ID",
             "[X] Go back to main menu"
         ]
-        pass;
+        
+        print("What do you want to do?\n")
+
+        input('Choice:')
 
     def makePayment(self):
         PAYMENT_INTENT_PROMPT = 10000

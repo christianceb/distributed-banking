@@ -89,9 +89,11 @@ message PublicAccountDetails {
 message PublicTransaction {
   uint64 id = 1;
   uint64 amount = 2;
-  uint64 fee = 3;
-  int64 source_account_id = 4;
-  int64 recipient_account_id = 5;
-  int32 status = 6; // -1 = failed; 0 = pending; 1 = success
-  uint64 updated_at = 8;
+  optional int64 source_account_id = 3;
+  int64 destination_account_id = 4;
+  string status = 5;
+  optional uint64 balance = 6;
+  optional uint64 fees = 7;
+  string kind = 8;
+  uint64 timestamp = 9;
 }

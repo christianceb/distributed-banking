@@ -2,7 +2,8 @@ from grpc import Channel
 import grpc
 
 from BankingApp_pb2_grpc import BankingAppStub
-from BankingApp_pb2 import LoginRequest, LoginResponse, PublicAccountDetailsRequest, PublicAccountDetailsResponse
+from BankingApp_pb2 import LoginRequest, LoginResponse, PublicAccountDetailsRequest, PublicAccountDetailsResponse, TransactionsRequest, TransactionsResponse
+from Models import Transaction
 
 
 class BasService:
@@ -32,6 +33,29 @@ class BasService:
             return response.account
 
         return None
+
+    def get_transactions_by_token(self, token: str):
+        request:  TransactionsRequest = TransactionsRequest(token=token)
+        response: TransactionsResponse = self.stub.GetTransactionsByToken(request)
+
+        transactions: list[Transaction] = []
+
+        for response_transaction in response.transactions:
+            transaction = Transaction()
+
+            transaction.id = response_transaction.id
+            transaction.amount = response_transaction.amount
+            transaction.source_account_id = response_transaction.source_account_id
+            transaction.destination_account_id = response_transaction.destination_account_id
+            transaction.status = response_transaction.status
+            transaction.balance = response_transaction.balance
+            transaction.fees = response_transaction.fees
+            transaction.kind = response_transaction.kind
+            transaction.timestamp = response_transaction.timestamp
+
+            transactions.append(transaction)
+
+        return transactions
 
     def __del__(self):
         # Prevent dangling connections which may exhaust connection pool threads

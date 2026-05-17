@@ -3,6 +3,7 @@ from typing import Optional
 
 class UserToken:
     user_id = None
+    account_id = None
     token = None
 
     def __init__(self):
@@ -14,7 +15,7 @@ class UserTokenService:
     def __init__(self):
         pass
 
-    def GenerateUserToken(self, user_id: int, entropy: list[str]) -> UserToken:
+    def GenerateUserToken(self, user_id: int, account_id: int, entropy: list[str]) -> UserToken:
         draft_token = ";".join(entropy);
 
         user_token = self.FindToken(draft_token)
@@ -23,6 +24,7 @@ class UserTokenService:
             user_token = UserToken()
 
             user_token.user_id = user_id
+            user_token.account_id = account_id
             user_token.token = draft_token
 
             self.user_tokens.append(user_token)

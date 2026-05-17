@@ -26,7 +26,11 @@ class GrpcBackend(BankingAppServicer):
             response.user_id = user_validation_result.user.id
             response.account_id = user_validation_result.account.id
 
-            user_token = self.user_token_service.GenerateUserToken(user_validation_result.user.id, [str(user_validation_result.user.id), request.username, request.password])
+            user_token = self.user_token_service.GenerateUserToken(
+                user_validation_result.user.id,
+                user_validation_result.account.id,
+                [str(user_validation_result.user.id), request.username, request.password]
+            )
 
             response.token = user_token.token
 
@@ -58,7 +62,10 @@ class GrpcBackend(BankingAppServicer):
         return response
 
     def GetTransactionsByToken(self, request: TransactionsRequest, context) -> TransactionsResponse:
-        pass
+        user_token = self.ValidateToken(request.token)
+
+        if user_token is not None:
+            return self.data_service.get_transactions_by_account_id(user_token.account_id)
 
     def GetTransactionById(self, request: TransactionRequest, context) -> TransactionsResponse:
         pass

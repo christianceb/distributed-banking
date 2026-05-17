@@ -23,7 +23,7 @@ class BankingService:
 
         cursor = connection.cursor()
         
-        cursor.execute('SELECT * FROM transactions WHERE id=? ORDER BY timestamp DESC', (id,))
+        cursor.execute('SELECT * FROM transactions WHERE source_account_id=? OR destination_account_id=? ORDER BY timestamp DESC', (account_id, account_id))
 
         return cursor.fetchall()
 
