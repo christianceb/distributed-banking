@@ -2,6 +2,7 @@ from typing import Optional
 
 from BasService import BasService
 from CurrencyHelper import int_cents_to_localised
+from Common import unix_timestamp_s, unix_timestamp_to_iso8601
 
 class User:
     id: int
@@ -53,12 +54,14 @@ class CliApplication:
                 self.session_data.user_id = login_response.user_id
                 self.session_data.account_id = login_response.account_id
                 self.session_data.token = login_response.token
-                
-                self.session_data.user = User(id=login_response, username=login_response.user.username)
+
+                self.session_data.user = User()
+                self.session_data.user.id = login_response.user.id
+                self.session_data.user.username=login_response.user.username
 
                 break;
             except:
-                print("Failed to login. Check credentials.")
+                print("\nFailed to login. Check credentials.\n\n---")
 
                 continue
 
@@ -67,8 +70,8 @@ class CliApplication:
     def printAccountOverview(self):
         overview = self.bas_service.get_account_by_token(self.session_data.token)
 
-        print("\nLogged in as: " + "REPLACE_WITH_USERNAME")
-
+        print("Logged in as: " + self.session_data.user.username)
+        print("Balances as of: " + unix_timestamp_to_iso8601(unix_timestamp_s()))
         print("Account current balance: " + int_cents_to_localised(overview.current_balance))
         print("Account available balance: " + int_cents_to_localised(overview.available_balance))
 
@@ -131,6 +134,9 @@ class CliApplication:
             if choice is MAIN_MENU:
                 print("Reloading account overview...")
 
+                choice = self.WAITING_INPUT
+                continue
+
             elif choice is VIEW_TRANSACTIONS:
                 self.viewTransactionsMenu()
 
@@ -139,7 +145,7 @@ class CliApplication:
 
             elif choice is self.EXIT:
                 print("Bye!")
-                break;
+                break
 
             choice = self.WAITING_INPUT
 

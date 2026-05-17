@@ -49,7 +49,7 @@ message PublicPostPaymentIntentRequest {
 // Response
 message LoginResponse {
   string token = 1;
-  //optional User user = 2;
+  optional PublicUser user = 2;
   optional uint64 user_id = 3;
   optional uint64 account_id = 4;
   bool success = 5;

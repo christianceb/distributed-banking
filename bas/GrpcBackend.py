@@ -21,12 +21,17 @@ class GrpcBackend(BankingAppServicer):
         response.success = False
 
         if user_validation_result is not None:
+            user = user_validation_result.user
+
             response.user_id = user_validation_result.user.id
             response.account_id = user_validation_result.account.id
 
             user_token = self.user_token_service.GenerateUserToken(user_validation_result.user.id, [str(user_validation_result.user.id), request.username, request.password])
 
             response.token = user_token.token
+
+            response.user.id = user.id
+            response.user.username = user.username
 
             response.success = True
 

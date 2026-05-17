@@ -1,9 +1,9 @@
 syntax = "proto3";
 
 service InternalBanking {
-  rpc GetUserRecordsByCredentials (UserCredentialsRequest) returns (UserResponse) {}
+  rpc GetUserByCredentials (UserByCredentialsRequest) returns (UserByCredentialsResponse) {}
 
-  rpc GetAccountByUserId (GetAccountByUserIdRequest) returns (AccountResponse) {}
+  rpc GetAccountByUserId (AccountByUserIdRequest) returns (AccountByUserIdResponse) {}
 
   // Transactions
   rpc GetTransactionsByAccountId (InternalTransactionsByAccountIdRequest) returns (InternalTransactionsResponse) {}
@@ -18,12 +18,12 @@ service InternalBanking {
 
 // ---
 // Requests
-message UserCredentialsRequest {
+message UserByCredentialsRequest {
   string username = 1;
   string password = 2;
 }
 
-message GetAccountByUserIdRequest {
+message AccountByUserIdRequest {
   uint64 user_id = 1;
 }
 
@@ -48,18 +48,18 @@ message PaymentIntentRequest {
 
 // ---
 // Responses
-message UserResponse {
+message UserByCredentialsResponse {
   bool found = 1;
   optional User user = 2;
   optional Account account = 3;
-  repeated uint64 transactions = 4;
+  repeated Transaction transactions = 4;
 }
 
 message GetUserByIdResponse {
   optional User user = 1;
 }
 
-message AccountResponse {
+message AccountByUserIdResponse {
   optional Account account = 1;
 }
 

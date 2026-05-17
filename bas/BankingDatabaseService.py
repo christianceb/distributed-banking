@@ -1,7 +1,7 @@
 import grpc
 from typing import Optional
 from InternalBanking_pb2_grpc import InternalBankingStub
-from InternalBanking_pb2 import AccountResponse, GetAccountByUserIdRequest, UserCredentialsRequest, UserResponse
+from InternalBanking_pb2 import AccountByUserIdResponse, AccountByUserIdRequest, UserByCredentialsRequest, UserByCredentialsResponse
 
 
 class BankingDatabaseService:
@@ -17,15 +17,15 @@ class BankingDatabaseService:
 
         print("BAS is listening to BDB via " + bdb_connection_string)
 
-    def validate_user(self, username: str , password: str) -> UserResponse:
-        request: UserCredentialsRequest = UserCredentialsRequest(username=username, password=password)
-        response: UserResponse = self.stub.GetUserRecordsByCredentials(request)
+    def validate_user(self, username: str , password: str) -> UserByCredentialsResponse:
+        request: UserByCredentialsRequest = UserByCredentialsRequest(username=username, password=password)
+        response: UserByCredentialsResponse = self.stub.GetUserByCredentials(request)
 
         return response if response.found else None
     
-    def get_account_by_user_id(self, user_id: int) -> AccountResponse:
-        request: GetAccountByUserIdRequest = GetAccountByUserIdRequest(user_id=user_id)
-        response: AccountResponse = self.stub.GetAccountByUserId(request)
+    def get_account_by_user_id(self, user_id: int) -> AccountByUserIdResponse:
+        request: AccountByUserIdRequest = AccountByUserIdRequest(user_id=user_id)
+        response: AccountByUserIdResponse = self.stub.GetAccountByUserId(request)
 
         return response
 

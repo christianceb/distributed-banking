@@ -3,6 +3,7 @@ import sqlite3
 from sqlite3 import Connection
 from time import time
 from typing import Optional
+from User import User
 from dependencies import database
 
 
@@ -36,19 +37,24 @@ class BankingService:
         self.db_connection.close()
         self.db_connection = None
 
-    def validate_user(self, username, password) -> Optional[int]:
+    def get_user_by_username_password(self, username, password) -> Optional[User]:
         connection = self.init_data_store()
 
         cursor = connection.cursor()
 
         cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
 
-        rows = cursor.fetchall()
+        row = cursor.fetchone()
 
         self.close_data_store_connection()
 
-        if (len(rows)):
-            return rows[0]['id']
+        if (row):
+            user = User()
+
+            user.id = row['id']
+            user.username = row['username']
+
+            return user
         else:
             return None
 
