@@ -3,7 +3,7 @@ syntax = "proto3";
 service InternalBanking {
   rpc GetUserRecordsByCredentials (UserCredentialsRequest) returns (UserResponse) {}
 
-  rpc GetAccountById (GetAccountByIdRequest) returns (AccountResponse) {}
+  rpc GetAccountByUserId (GetAccountByUserIdRequest) returns (AccountResponse) {}
 
   // Transactions
   rpc GetTransactionsByAccountId (InternalTransactionsByAccountIdRequest) returns (InternalTransactionsResponse) {}
@@ -23,8 +23,8 @@ message UserCredentialsRequest {
   string password = 2;
 }
 
-message GetAccountByIdRequest {
-  uint64 id = 1;
+message GetAccountByUserIdRequest {
+  uint64 user_id = 1;
 }
 
 message InternalTransactionsByAccountIdRequest {
@@ -52,7 +52,11 @@ message UserResponse {
   bool found = 1;
   optional User user = 2;
   optional Account account = 3;
-  //repeated Transaction transactions = 4;
+  repeated uint64 transactions = 4;
+}
+
+message GetUserByIdResponse {
+  optional User user = 1;
 }
 
 message AccountResponse {

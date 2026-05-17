@@ -1,0 +1,26 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "BDB Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bdb/main.py"
+        },
+        {
+            "name": "BAS Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bas/main.py"
+        },
+        {
+            "name": "BC Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bc/main.py"
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 from BankingService import BankingService
 from InternalBanking_pb2_grpc import InternalBankingServicer
-from InternalBanking_pb2 import UserCredentialsRequest, UserResponse
+from InternalBanking_pb2 import AccountResponse, GetAccountByUserIdRequest, UserCredentialsRequest, UserResponse
 
 def interceptor(func):
     def inner(*args, **kwargs):
@@ -15,7 +15,6 @@ class GrpcBackend(InternalBankingServicer):
     def __init__(self):
         self.banking_service = BankingService(None)
 
-    # @interceptor
     def GetUserRecordsByCredentials(self, request: UserCredentialsRequest, context) -> UserResponse:
         response = UserResponse()
 
@@ -36,7 +35,20 @@ class GrpcBackend(InternalBankingServicer):
             response.account.updated_at = account['updated_at']
 
             # May need to transform this
-            response.transactions = []
+            response.transactions.extend([1,2,3,4])
             # response.transactions = [self.banking_service.get_transactions_by_account_id(account['id'])]
+
+        return response
+
+    def GetAccountByUserId(self, request: GetAccountByUserIdRequest, context) -> AccountResponse:
+        response = AccountResponse()
+
+        account = self.banking_service.get_account_by_user_id(request.user_id)
+
+        response.account.id = account['id']
+        response.account.user_id = account['user_id']
+        response.account.current_balance = account['current_balance']
+        response.account.available_balance = account['available_balance']
+        response.account.updated_at = account['updated_at']
 
         return response

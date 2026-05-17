@@ -1,5 +1,4 @@
 import grpc
-import sqlite3
 from concurrent import futures
 from GrpcBackend import GrpcBackend
 from grpc import Channel, Server

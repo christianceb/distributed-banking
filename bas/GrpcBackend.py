@@ -15,13 +15,19 @@ class GrpcBackend(BankingAppServicer):
     def Login(self, request: LoginRequest, context) -> LoginResponse:
         response = LoginResponse()
 
-        user_response = self.data_service.validate_user(request.username, request.password)
+        user_validation_result = self.data_service.validate_user(request.username, request.password)
 
         response.token = ""
         response.success = False
 
-        if user_response is not None:
-            response.token = self.user_token_service.GenerateUserToken(user_response.user, [str(user_response.user), request.username, request.password])
+        if user_validation_result is not None:
+            response.user_id = user_validation_result.user.id
+            response.account_id = user_validation_result.account.id
+
+            user_token = self.user_token_service.GenerateUserToken(user_validation_result.user.id, [str(user_validation_result.user.id), request.username, request.password])
+
+            response.token = user_token.token
+
             response.success = True
 
         return response
@@ -30,7 +36,21 @@ class GrpcBackend(BankingAppServicer):
         return self.user_token_service.FindToken(token)
 
     def GetAccountDetailsByToken(self, request: PublicAccountDetailsRequest, context) -> PublicAccountDetailsResponse:
-        pass
+        response = PublicAccountDetailsResponse();
+    
+        user_token = self.ValidateToken(request.token)
+
+        if user_token is not None:
+            data_service_response = self.data_service.get_account_by_user_id(user_token.user_id)
+            account = data_service_response.account
+
+            response.account.id = account.id
+            response.account.user_id = account.user_id
+            response.account.current_balance = account.current_balance
+            response.account.available_balance = account.available_balance
+            response.account.updated_at = account.updated_at
+
+        return response
 
     def GetTransactionsByToken(self, request: TransactionsRequest, context) -> TransactionsResponse:
         pass

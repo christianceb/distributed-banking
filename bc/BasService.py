@@ -16,19 +16,20 @@ class BasService:
         self.channel = grpc.insecure_channel(self.connection_string)
         self.stub = BankingAppStub(self.channel)
 
-    def login(self, username: str , password: str) -> str:
+    def login(self, username: str , password: str) -> LoginResponse:
         response: LoginResponse = self.stub.Login(LoginRequest(username=username, password=password))
 
         if response.success is False:
             raise BaseException("Login failed")
 
-        return response.token
+        return response
     
     def get_account_by_token(self, token: str):
-        response: PublicAccountDetailsResponse = self.stub.Login(PublicAccountDetailsRequest(token=token))
+        request:  PublicAccountDetailsRequest = PublicAccountDetailsRequest(token=token)
+        response: PublicAccountDetailsResponse = self.stub.GetAccountDetailsByToken(request)
 
-        if len(response.accounts):
-            return response.accounts[0]
+        if response.account is not None:
+            return response.account
 
         return None
 

@@ -14,7 +14,7 @@ class UserTokenService:
     def __init__(self):
         pass
 
-    def GenerateUserToken(self, user_id: int, entropy: list[str]) -> str:
+    def GenerateUserToken(self, user_id: int, entropy: list[str]) -> UserToken:
         draft_token = ";".join(entropy);
 
         user_token = self.FindToken(draft_token)
@@ -22,19 +22,19 @@ class UserTokenService:
         if user_token is None:
             user_token = UserToken()
 
-            user_token.user_id = user_id,
+            user_token.user_id = user_id
             user_token.token = draft_token
 
             self.user_tokens.append(user_token)
         
-        return user_token.token
+        return user_token
 
     def FindToken(self, token: str) -> Optional[UserToken]:
         user_token = None
 
         for user_token in self.user_tokens:
             if user_token.token == token:
-                user_token = token
-                break;
+                user_token.token = token
+                break
 
         return user_token

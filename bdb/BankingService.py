@@ -34,6 +34,7 @@ class BankingService:
 
     def close_data_store_connection(self):
         self.db_connection.close()
+        self.db_connection = None
 
     def validate_user(self, username, password) -> Optional[int]:
         connection = self.init_data_store()
@@ -50,6 +51,15 @@ class BankingService:
             return rows[0]['id']
         else:
             return None
+
+    def get_user_by_id(self, id):
+        connection = self.init_data_store()
+
+        cursor = connection.cursor()
+        
+        cursor.execute('SELECT * FROM users WHERE id=?', (id))
+
+        return cursor.fetchone()
 
     def get_account_by_user_id(self, user_id):
         connection = self.init_data_store()
@@ -88,7 +98,7 @@ class BankingService:
 
         # This should be a pending transaction but for simplicity we keep it
         cursor.execute(
-            "INSERT INTO transactions (destination_account, amount, status, balance, kind, tries, timestamp)"
+            "INSERT INTO transactions (destination_account, amount, status, balance, kind, tries, timestamp)",
             (bank_account['id'], amount, "COMPLETED", new_current_balance, "FEE", 1, int(time()))
         )
 
