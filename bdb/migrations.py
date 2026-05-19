@@ -47,6 +47,7 @@ def clearMigrateSeed():
             source_account_id integer constraint transactions_accounts_id_fk references accounts,
             destination_account_id integer not null constraint transactions_accounts_id_fk_2 references accounts,
             amount integer not null,
+            message text,
             status varchar(255) default 'PENDING' not null,
             balance integer,
             fees integer,

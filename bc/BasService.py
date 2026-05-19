@@ -24,9 +24,9 @@ class BasService:
             raise BaseException("Login failed")
 
         return response
-    
+
     def get_account_by_token(self, token: str):
-        request:  PublicAccountDetailsRequest = PublicAccountDetailsRequest(token=token)
+        request: PublicAccountDetailsRequest = PublicAccountDetailsRequest(token=token)
         response: PublicAccountDetailsResponse = self.stub.GetAccountDetailsByToken(request)
 
         if response.account is not None:
@@ -35,7 +35,7 @@ class BasService:
         return None
 
     def get_transactions_by_token(self, token: str):
-        request:  TransactionsRequest = TransactionsRequest(token=token)
+        request: TransactionsRequest = TransactionsRequest(token=token)
         response: TransactionsResponse = self.stub.GetTransactionsByToken(request)
 
         transactions: list[Transaction] = []
@@ -47,6 +47,7 @@ class BasService:
             transaction.amount = response_transaction.amount
             transaction.source_account_id = response_transaction.source_account_id
             transaction.destination_account_id = response_transaction.destination_account_id
+            transaction.message = response_transaction.message
             transaction.status = response_transaction.status
             transaction.balance = response_transaction.balance
             transaction.fees = response_transaction.fees

@@ -3,33 +3,16 @@ from typing import Optional
 from BasService import BasService
 from CurrencyHelper import int_cents_to_localised
 from Common import unix_timestamp_s, unix_timestamp_to_iso8601
-from Models import Transaction
+from Models import SessionData, Transaction, User
+from Utils import render_txn_amount
 
-class User:
-    id: int
-    username: str
-
-class Account:
-    id: int
-    current_balance: int
-    available_balance: int
-
-class SessionData:
-    user_id: int
-    account_id: int
-    user: Optional[User]
-    account: Optional[Account]
-    token: str
 
 class CliApplication:
-    WAITING_INPUT: int = 0
-    
-    EXIT: int = 100000
-    EXIT_AS_STRING: str = "x"
+    MENU_WAITING_INPUT: str = "WAIT"
+    MENU_EXIT: str = "x"
 
     bas_service: BasService = None
-    
-    session_data: SessionData = None;
+    session_data: SessionData = None
 
     def __init__(self, basService: BasService):
         self.bas_service = basService
@@ -50,7 +33,7 @@ class CliApplication:
             try:
                 login_response = self.bas_service.login(username_input, password_input)
                 
-                self.session_data = SessionData();
+                self.session_data = SessionData()
 
                 self.session_data.user_id = login_response.user_id
                 self.session_data.account_id = login_response.account_id
@@ -82,11 +65,11 @@ class CliApplication:
     def mainMenu(self):
         keyboard_interrupt = False
 
-        MAIN_MENU = 1
-        VIEW_TRANSACTIONS = 2
-        MAKE_PAYMENT = 3
+        MAIN_MENU = "1"
+        VIEW_TRANSACTIONS = "2"
+        MAKE_PAYMENT = "3"
 
-        valid_options = [MAIN_MENU, VIEW_TRANSACTIONS, MAKE_PAYMENT, self.EXIT]
+        valid_options = [MAIN_MENU, VIEW_TRANSACTIONS, MAKE_PAYMENT, self.MENU_EXIT]
 
         menu_options: list[str] = [
             "[1] Reload this screen (refresh balance)",
@@ -95,9 +78,9 @@ class CliApplication:
             "[X] Exit Application"
         ]
 
-        choice: int = self.WAITING_INPUT
+        choice: str = self.MENU_WAITING_INPUT
 
-        while choice is self.WAITING_INPUT:
+        while choice is self.MENU_WAITING_INPUT:
             if keyboard_interrupt:
                 break
 
@@ -112,76 +95,121 @@ class CliApplication:
             for menu_option in menu_options:
                 print("- " + menu_option)
 
-            while choice is self.WAITING_INPUT:
+            while choice is self.MENU_WAITING_INPUT:
                 if keyboard_interrupt:
                     break
 
                 try:
-                    string_choice = input("\nEnter choice: ")
-
-                    if str.lower(string_choice) == self.EXIT_AS_STRING:
-                        choice = self.EXIT
-                    else:
-                        choice: int = int(string_choice)
+                    choice = input("\nEnter choice: ").lower()
                 except KeyboardInterrupt:
                     keyboard_interrupt = True
                     break
                 except:
-                    choice = self.WAITING_INPUT
+                    choice = self.MENU_WAITING_INPUT
 
                 if choice not in valid_options: 
                     print("Choice entered invalid. Try again.")
 
-            if choice is MAIN_MENU:
-                print("Reloading account overview...")
+            if choice == MAIN_MENU:
+                print("\nReloading account overview...")
 
-                choice = self.WAITING_INPUT
+                choice = self.MENU_WAITING_INPUT
                 continue
 
-            elif choice is VIEW_TRANSACTIONS:
+            elif choice == VIEW_TRANSACTIONS:
                 self.viewTransactionsMenu()
 
-            elif choice is MAKE_PAYMENT:
+            elif choice == MAKE_PAYMENT:
                 self.makePayment()
 
-            elif choice is self.EXIT:
+            elif choice == self.MENU_EXIT:
                 print("Bye!")
                 break
 
-            choice = self.WAITING_INPUT
+            choice = self.MENU_WAITING_INPUT
+
+    def printTransactionsHeaders(self):
+        headers: list[tuple[str, int]] = []
+
+        headers.append(("Transaction Id", 1))
+        headers.append(("Amount", 2))
+        headers.append(("Status", 1))
+        headers.append(("Balance", 2))
+        headers.append(("Kind", 2))
+        headers.append(("Date/Time", 1))
+
+        for header in headers:
+            print(f"{header[0]}" + ("\t"*header[1]), end="")
 
     def viewTransactionsMenu(self):
         REFRESH_SCREEN = "r"
         VIEW_TRANSACTION = "v"
-
-        transactions: list[Transaction] = self.bas_service.get_transactions_by_token(self.session_data.token)
-
-        for transaction in transactions:
-            print(f"""
----
-Transaction Id: {transaction.id}
-Amount: {transaction.amount}
-Source Account ID: {transaction.source_account_id}
-Destination Account ID: {transaction.destination_account_id}
-Status: {transaction.status}
-Balance: {transaction.balance}
-Fees: {transaction.fees}
-Kind: {transaction.fees}
-Timestamp: {transaction.timestamp}
----
-                  """)
-
-        valid_options = [REFRESH_SCREEN, VIEW_TRANSACTION, self.EXIT]
+        valid_options = [REFRESH_SCREEN, VIEW_TRANSACTION, self.MENU_EXIT]
 
         menu_options: list[str] = [
-            "[R] Reload this transaction screen",
+            "[R] Reload this transaction screens",
             "[V] View a Transaction by Transaction ID",
             "[X] Go back to main menu"
         ]
-        
-        print("What do you want to do?\n")
 
-        input('Choice:')
+        choice = self.MENU_WAITING_INPUT
+
+        while choice is self.MENU_WAITING_INPUT:
+            print("\n---")
+            
+            print("Viewing Transactions")
+
+            transactions: list[Transaction] = self.bas_service.get_transactions_by_token(self.session_data.token)
+
+            self.printTransactionsHeaders()
+
+            print("\n---")
+
+            for transaction in transactions:
+                print(
+                    str(transaction.id) + "\t",
+                    render_txn_amount(transaction, self.session_data.account_id),
+                    transaction.status,
+                    str(transaction.balance) + "\t",
+                    transaction.kind,
+                    unix_timestamp_to_iso8601(transaction.timestamp),
+                    sep="\t", end=None
+                )
+
+            while choice is self.MENU_WAITING_INPUT:
+                print("\n---")
+
+                print("What do you want to do?\n")
+
+                for menu_option in menu_options:
+                    print("- " + menu_option)
+
+                try:
+                    choice = input("\nEnter choice: ").lower()
+                except KeyboardInterrupt as error:
+                    raise error
+                except:
+                    choice = self.MENU_WAITING_INPUT
+
+                if choice not in valid_options: 
+                    print("Choice entered invalid. Try again.")
+
+            if choice == self.MENU_EXIT:
+                print("\nLeaving View Transactions")
+                break
+            elif choice == REFRESH_SCREEN:
+                print("\Reloading View Transactions")
+                choice = self.MENU_WAITING_INPUT
+                continue
+            elif choice == VIEW_TRANSACTION:
+                self.viewTransaction()
+
+            choice = self.MENU_WAITING_INPUT
+
+    def viewTransaction(self):
+        print("\n---")
+
+        input("Enter Transaction ID to view: ")
 
     def makePayment(self):
         PAYMENT_INTENT_PROMPT = 10000

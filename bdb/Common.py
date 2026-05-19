@@ -3,6 +3,7 @@ class Transaction:
     source_account_id: int
     destination_account_id: int
     amount: int
+    message: str
     status: str
     balance: int
     fees: int

@@ -71,6 +71,7 @@ class GrpcBackend(InternalBankingServicer):
                 amount = transaction_row['amount'],
                 source_account_id = transaction_row['source_account_id'],
                 destination_account_id = transaction_row['destination_account_id'],
+                message = transaction_row['message'],
                 status = transaction_row['status'],
                 balance = transaction_row['balance'],
                 fees = transaction_row['fees'],

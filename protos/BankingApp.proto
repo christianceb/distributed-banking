@@ -91,9 +91,10 @@ message PublicTransaction {
   uint64 amount = 2;
   optional int64 source_account_id = 3;
   int64 destination_account_id = 4;
-  string status = 5;
-  optional uint64 balance = 6;
-  optional uint64 fees = 7;
-  string kind = 8;
-  uint64 timestamp = 9;
+  string message = 5;
+  string status = 6;
+  optional uint64 balance = 7;
+  optional uint64 fees = 8;
+  string kind = 9;
+  uint64 timestamp = 10;
 }
