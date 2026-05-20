@@ -1,6 +1,6 @@
 from BankingService import BankingService
 from InternalBanking_pb2_grpc import InternalBankingServicer
-from InternalBanking_pb2 import AccountByUserIdResponse, AccountByUserIdRequest, InternalTransactionsByAccountIdRequest, InternalTransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
+from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, InternalTransactionsByAccountIdRequest, InternalTransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
 from Common import Transaction
 
 def interceptor(func):
@@ -80,5 +80,16 @@ class GrpcBackend(InternalBankingServicer):
                 timestamp = transaction_row['timestamp'],
                 # updated_at = transaction_row['updated_at'],
             )
+
+        return response
+
+    def AccountByIdExists(self, request: AccountByIdExistsRequest, context) -> AccountByIdExistsResponse:
+        response = AccountByIdExistsResponse()
+
+
+        if self.banking_service.get_account(request.id):
+            response.exists = True
+        else:
+            response.exists = False
 
         return response

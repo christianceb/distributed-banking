@@ -1,7 +1,7 @@
 import grpc
 from typing import Optional
 from InternalBanking_pb2_grpc import InternalBankingStub
-from InternalBanking_pb2 import AccountByUserIdResponse, AccountByUserIdRequest, InternalTransactionsByAccountIdRequest, InternalTransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
+from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, InternalTransactionsByAccountIdRequest, InternalTransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
 
 
 class BankingDatabaseService:
@@ -34,6 +34,12 @@ class BankingDatabaseService:
         response: InternalTransactionsResponse = self.stub.GetTransactionsByAccountId(request)
 
         return response
+
+    def account_by_id_exists(self, account_id: int) -> bool:
+        request: AccountByIdExistsRequest = AccountByIdExistsRequest(id=account_id)
+        response: AccountByIdExistsResponse = self.stub.AccountByIdExists(request)
+
+        return response.exists
 
     def __del__(self):
         # Prevent dangling connections which may exhaust connection pool threads

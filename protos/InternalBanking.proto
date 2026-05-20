@@ -4,6 +4,7 @@ service InternalBanking {
   rpc GetUserByCredentials (UserByCredentialsRequest) returns (UserByCredentialsResponse) {}
 
   rpc GetAccountByUserId (AccountByUserIdRequest) returns (AccountByUserIdResponse) {}
+  rpc AccountByIdExists (AccountByIdExistsRequest) returns (AccountByIdExistsResponse) {}
 
   // Transactions
   rpc GetTransactionsByAccountId (InternalTransactionsByAccountIdRequest) returns (InternalTransactionsResponse) {}
@@ -25,6 +26,10 @@ message UserByCredentialsRequest {
 
 message AccountByUserIdRequest {
   uint64 user_id = 1;
+}
+
+message AccountByIdExistsRequest {
+  uint64 id = 1;
 }
 
 message InternalTransactionsByAccountIdRequest {
@@ -62,6 +67,10 @@ message GetUserByIdResponse {
 
 message AccountByUserIdResponse {
   optional Account account = 1;
+}
+
+message AccountByIdExistsResponse {
+    bool exists = 1;
 }
 
 message InternalTransactionsResponse {

@@ -3,6 +3,7 @@ from BankingApp_pb2 import EvaluatePaymentIntentResponse, LoginRequest, LoginRes
 from BankingApp_pb2_grpc import BankingAppServicer
 from UserTokenService import UserToken, UserTokenService
 from BankingDatabaseService import BankingDatabaseService
+from Utils import calculate_fees
 
 class GrpcBackend(BankingAppServicer):
     data_service: BankingDatabaseService = None;
@@ -65,5 +66,16 @@ class GrpcBackend(BankingAppServicer):
         pass
 
     def EvaluatePaymentIntent(self, request: PublicPaymentIntentRequest, context) -> EvaluatePaymentIntentResponse:
-        # WIP
-        return EvaluatePaymentIntentResponse(valid_payment_intent=True, fees=100)
+        user_token = self.ValidateToken(request.token)
+        fees = 0
+        valid_payment_intent = False
+
+        if request.amount > 0:
+            if user_token and user_token.account_id != request.recipient_account_id:
+                if self.data_service.account_by_id_exists(request.recipient_account_id):
+                    valid_payment_intent = True
+            
+        if valid_payment_intent:
+            fees = calculate_fees(amount=request.amount)
+
+        return EvaluatePaymentIntentResponse(valid_payment_intent=True, fees=fees)

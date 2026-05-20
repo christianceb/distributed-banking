@@ -76,7 +76,7 @@ class BankingService:
 
         return cursor.fetchone()
 
-    def get_account(self, account_id):
+    def get_account(self, account_id: int):
         connection = self.init_data_store()
 
         cursor = connection.cursor()

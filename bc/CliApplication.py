@@ -2,7 +2,7 @@ from typing import Optional
 
 from BasService import BasService
 from CurrencyHelper import inputted_amount_to_cents, int_cents_to_localised
-from Common import unix_timestamp_s, unix_timestamp_to_iso8601
+from Temporal import unix_timestamp_s, unix_timestamp_to_iso8601
 from Models import SessionData, Transaction, User
 from Utils import render_txn_amount
 
@@ -166,11 +166,6 @@ class CliApplication:
         """)
 
     def make_payment(self):
-        PAYMENT_INTENT_PROMPT = 10000
-        SHOW_ESTIMATE_AND_CONFIRM = 11000
-        CANCEL_PAYMENT_INTENT = 12000
-        PAYMENT_INTENT_SUBMITTED = 13000
-
         choice: str = self.MENU_WAITING_INPUT
 
         while choice is self.MENU_WAITING_INPUT:
