@@ -5,12 +5,8 @@ service BankingApp {
 
   rpc GetAccountDetailsByToken (PublicAccountDetailsRequest) returns (PublicAccountDetailsResponse) {}
 
-  // Transactions
-  rpc GetTransactionsByToken (TransactionsRequest) returns (TransactionsResponse) {}
-  rpc GetTransactionById (TransactionRequest) returns (TransactionsResponse) {}
-
   // Estimate Payment Intent
-  rpc GetPaymentIntentEstimate (PaymentIntentEstimateRequest) returns (PaymentIntentEstimateResponse) {}
+  rpc EvaluatePaymentIntent (PublicPaymentIntentRequest) returns (EvaluatePaymentIntentResponse) {}
 
   // Make Payment
   rpc PostPaymentIntent (PublicPostPaymentIntentRequest) returns (PublicPaymentIntentStoreResponse) {}
@@ -27,22 +23,26 @@ message PublicAccountDetailsRequest {
   string token = 1;
 }
 
-message TransactionsRequest {
+message PublicPaymentIntentRequest {
   string token = 1;
+  uint64 recipient_account_id = 2;
+  uint64 amount = 3;
 }
 
 message TransactionRequest {
-  uint64 transaction_id = 1;
+  string token = 1;
+  uint64 transaction_id = 2;
 }
 
-message PaymentIntentEstimateRequest {
-  uint64 amount = 1;
+message TransactionsResponse {
+  repeated PublicTransaction transactions = 1;
 }
 
 message PublicPostPaymentIntentRequest {
   string token = 1;
   uint64 amount = 2;
   uint64 recipient_account_id = 3;
+  string message = 4;
 }
 
 // ---
@@ -59,12 +59,9 @@ message PublicAccountDetailsResponse {
   optional PublicAccountDetails account = 1;
 }
 
-message TransactionsResponse {
-  repeated PublicTransaction transactions = 1;
-}
-
-message PaymentIntentEstimateResponse {
-  uint64 fees = 1;
+message EvaluatePaymentIntentResponse {
+  bool valid_payment_intent = 1;
+  uint64 fees = 2;
 }
 
 message PublicPaymentIntentStoreResponse {
@@ -90,7 +87,7 @@ message PublicTransaction {
   uint64 id = 1;
   uint64 amount = 2;
   optional int64 source_account_id = 3;
-  int64 destination_account_id = 4;
+  uint64 destination_account_id = 4;
   string message = 5;
   string status = 6;
   optional uint64 balance = 7;

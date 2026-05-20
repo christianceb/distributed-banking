@@ -2,7 +2,7 @@ from grpc import Channel
 import grpc
 
 from BankingApp_pb2_grpc import BankingAppStub
-from BankingApp_pb2 import LoginRequest, LoginResponse, PublicAccountDetailsRequest, PublicAccountDetailsResponse, TransactionsRequest, TransactionsResponse
+from BankingApp_pb2 import EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, PublicPaymentIntentRequest, PublicAccountDetailsRequest, PublicAccountDetailsResponse
 from Models import Transaction
 
 
@@ -34,29 +34,14 @@ class BasService:
 
         return None
 
-    def get_transactions_by_token(self, token: str):
-        request: TransactionsRequest = TransactionsRequest(token=token)
-        response: TransactionsResponse = self.stub.GetTransactionsByToken(request)
+    def get_transaction(self, token: str, transaction_id: int) -> Transaction:
+        pass
 
-        transactions: list[Transaction] = []
+    def validate_payment_intent(self, token: str, recipient_account_id: int, amount: int):
+        request = PublicPaymentIntentRequest(token=token, recipient_account_id=recipient_account_id, amount=amount)
+        response: EvaluatePaymentIntentResponse = self.stub.EvaluatePaymentIntent(request)
 
-        for response_transaction in response.transactions:
-            transaction = Transaction()
-
-            transaction.id = response_transaction.id
-            transaction.amount = response_transaction.amount
-            transaction.source_account_id = response_transaction.source_account_id
-            transaction.destination_account_id = response_transaction.destination_account_id
-            transaction.message = response_transaction.message
-            transaction.status = response_transaction.status
-            transaction.balance = response_transaction.balance
-            transaction.fees = response_transaction.fees
-            transaction.kind = response_transaction.kind
-            transaction.timestamp = response_transaction.timestamp
-
-            transactions.append(transaction)
-
-        return transactions
+        return response
 
     def __del__(self):
         # Prevent dangling connections which may exhaust connection pool threads

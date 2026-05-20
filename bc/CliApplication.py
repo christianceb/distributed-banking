@@ -1,7 +1,7 @@
 from typing import Optional
 
 from BasService import BasService
-from CurrencyHelper import int_cents_to_localised
+from CurrencyHelper import inputted_amount_to_cents, int_cents_to_localised
 from Common import unix_timestamp_s, unix_timestamp_to_iso8601
 from Models import SessionData, Transaction, User
 from Utils import render_txn_amount
@@ -66,14 +66,14 @@ class CliApplication:
         keyboard_interrupt = False
 
         MAIN_MENU = "1"
-        VIEW_TRANSACTIONS = "2"
+        VIEW_TRANSACTION = "2"
         MAKE_PAYMENT = "3"
 
-        valid_options = [MAIN_MENU, VIEW_TRANSACTIONS, MAKE_PAYMENT, self.MENU_EXIT]
+        valid_options = [MAIN_MENU, VIEW_TRANSACTION, MAKE_PAYMENT, self.MENU_EXIT]
 
         menu_options: list[str] = [
             "[1] Reload this screen (refresh balance)",
-            "[2] View Transactions",
+            "[2] View Transaction",
             "[3] Make a payment",
             "[X] Exit Application"
         ]
@@ -116,11 +116,11 @@ class CliApplication:
                 choice = self.MENU_WAITING_INPUT
                 continue
 
-            elif choice == VIEW_TRANSACTIONS:
-                self.viewTransactionsMenu()
+            elif choice == VIEW_TRANSACTION:
+                self.view_transaction()
 
             elif choice == MAKE_PAYMENT:
-                self.makePayment()
+                self.make_payment()
 
             elif choice == self.MENU_EXIT:
                 print("Bye!")
@@ -128,93 +128,100 @@ class CliApplication:
 
             choice = self.MENU_WAITING_INPUT
 
-    def printTransactionsHeaders(self):
-        headers: list[tuple[str, int]] = []
+    def view_transaction(self):
+        print("\n---\n")
 
-        headers.append(("Transaction Id", 1))
-        headers.append(("Amount", 2))
-        headers.append(("Status", 1))
-        headers.append(("Balance", 2))
-        headers.append(("Kind", 2))
-        headers.append(("Date/Time", 1))
+        exit_menu_loop = None
 
-        for header in headers:
-            print(f"{header[0]}" + ("\t"*header[1]), end="")
-
-    def viewTransactionsMenu(self):
-        REFRESH_SCREEN = "r"
-        VIEW_TRANSACTION = "v"
-        valid_options = [REFRESH_SCREEN, VIEW_TRANSACTION, self.MENU_EXIT]
-
-        menu_options: list[str] = [
-            "[R] Reload this transaction screens",
-            "[V] View a Transaction by Transaction ID",
-            "[X] Go back to main menu"
-        ]
-
-        choice = self.MENU_WAITING_INPUT
-
-        while choice is self.MENU_WAITING_INPUT:
-            print("\n---")
-            
-            print("Viewing Transactions")
-
-            transactions: list[Transaction] = self.bas_service.get_transactions_by_token(self.session_data.token)
-
-            self.printTransactionsHeaders()
-
-            print("\n---")
-
-            for transaction in transactions:
-                print(
-                    str(transaction.id) + "\t",
-                    render_txn_amount(transaction, self.session_data.account_id),
-                    transaction.status,
-                    str(transaction.balance) + "\t",
-                    transaction.kind,
-                    unix_timestamp_to_iso8601(transaction.timestamp),
-                    sep="\t", end=None
-                )
-
-            while choice is self.MENU_WAITING_INPUT:
-                print("\n---")
-
-                print("What do you want to do?\n")
-
-                for menu_option in menu_options:
-                    print("- " + menu_option)
-
-                try:
-                    choice = input("\nEnter choice: ").lower()
-                except KeyboardInterrupt as error:
-                    raise error
-                except:
-                    choice = self.MENU_WAITING_INPUT
-
-                if choice not in valid_options: 
-                    print("Choice entered invalid. Try again.")
-
-            if choice == self.MENU_EXIT:
-                print("\nLeaving View Transactions")
-                break
-            elif choice == REFRESH_SCREEN:
-                print("\Reloading View Transactions")
-                choice = self.MENU_WAITING_INPUT
+        while exit_menu_loop != self.MENU_EXIT:
+            try:
+                transaction_id = int(input("Enter Transaction ID to view: "))
+            except:
                 continue
-            elif choice == VIEW_TRANSACTION:
-                self.viewTransaction()
+            
+            transaction = self.bas_service.get_transaction(self.session_data.token, transaction_id)
 
-            choice = self.MENU_WAITING_INPUT
+            if transaction is None:
+                print("\nCould not load this transaction")
+            else:
+                self.print_transaction(transaction)
 
-    def viewTransaction(self):
-        print("\n---")
+            input("\nPress [enter] to go back")
 
-        input("Enter Transaction ID to view: ")
+            exit_menu_loop = self.MENU_EXIT
 
-    def makePayment(self):
+    def print_transaction(self, transaction: Transaction):
+        print(f"""
+            ---
+            Transaction ID: {transaction.id}
+            Amount: {transaction.amount}
+            Source Account ID: {transaction.source_account_id}
+            Destination Account ID: {transaction.destination_account_id}
+            Status: {transaction.status}
+            Balance: {transaction.balance}
+            Fees: {transaction.fees}
+            Kind: {transaction.fees}
+            Timestamp: {transaction.timestamp}
+            ---
+        """)
+
+    def make_payment(self):
         PAYMENT_INTENT_PROMPT = 10000
         SHOW_ESTIMATE_AND_CONFIRM = 11000
         CANCEL_PAYMENT_INTENT = 12000
         PAYMENT_INTENT_SUBMITTED = 13000
 
-        pass
+        choice: str = self.MENU_WAITING_INPUT
+
+        while choice is self.MENU_WAITING_INPUT:
+            print("\n---\n")
+
+            payment_intent_valid = False
+
+            input_recipient_account_id = input("Enter recipient account ID: ")
+            input_amount_to_transfer = input("Enter amount to transfer: ")
+            input_message = input("Enter message [optional]: ")
+
+            # Validate input by casting
+            try:
+                recipient_account_id = int(input_recipient_account_id)
+                transfer_amount = inputted_amount_to_cents(float(input_amount_to_transfer))
+            except:
+                print("\nInvalid inputs provided. Try again.")
+                continue
+            
+            message = input_message
+
+            payment_intent = self.bas_service.validate_payment_intent(self.session_data.token, recipient_account_id, transfer_amount)
+
+            if not payment_intent.valid_payment_intent:
+                print("Unable to continue with transaction. Either the recipient is invalid, or you do not have enough funds to make the transaction.")
+            else:
+                transfer_total = transfer_amount + payment_intent.fees
+
+                print("\nPayment will be sent to account with ID: " + str(recipient_account_id))
+                print("Transfer amount: " + int_cents_to_localised(transfer_amount))
+                print("Transfer fee: " + int_cents_to_localised(payment_intent.fees))
+                print("Total transfer (incl fees): " + int_cents_to_localised(transfer_total))
+                print("Message: " + message)
+
+                valid_confirm_input = False
+
+                while valid_confirm_input is False:
+                    try:
+                        confirm = input("\nConfirm and submit payment? [y/n]: ").lower()
+                    except:
+                        continue
+
+                    if confirm == "n":
+                        valid_confirm_input = True
+                        choice = self.MENU_EXIT
+                        print("\nCancelling payment. Returning to Main Menu")
+                        continue
+                    elif confirm == "y":
+                        valid_confirm_input = True
+
+                        print("Your payment has been received")
+                        print("Transfer amount: 100.10")
+                        print("Transfer fee: 0.10")
+                        print("Message: hi!")

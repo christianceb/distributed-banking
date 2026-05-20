@@ -1,5 +1,5 @@
 from typing import Optional
-from BankingApp_pb2 import LoginRequest, LoginResponse, PublicAccountDetailsRequest, PublicAccountDetailsResponse, TransactionRequest, TransactionsRequest, TransactionsResponse
+from BankingApp_pb2 import EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, PublicAccountDetailsRequest, PublicAccountDetailsResponse, PublicPaymentIntentRequest, TransactionRequest, TransactionsResponse
 from BankingApp_pb2_grpc import BankingAppServicer
 from UserTokenService import UserToken, UserTokenService
 from BankingDatabaseService import BankingDatabaseService
@@ -61,11 +61,9 @@ class GrpcBackend(BankingAppServicer):
 
         return response
 
-    def GetTransactionsByToken(self, request: TransactionsRequest, context) -> TransactionsResponse:
-        user_token = self.ValidateToken(request.token)
-
-        if user_token is not None:
-            return self.data_service.get_transactions_by_account_id(user_token.account_id)
-
     def GetTransactionById(self, request: TransactionRequest, context) -> TransactionsResponse:
         pass
+
+    def EvaluatePaymentIntent(self, request: PublicPaymentIntentRequest, context) -> EvaluatePaymentIntentResponse:
+        # WIP
+        return EvaluatePaymentIntentResponse(valid_payment_intent=True, fees=100)
