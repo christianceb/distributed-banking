@@ -1,5 +1,4 @@
 import os.path
-import sqlite3
 
 from dependencies import database
 
@@ -114,8 +113,8 @@ def clearMigrateSeed():
         insert into transactions
             (destination_account_id, amount, kind)
         values
-            (2, 100000, 'BROUGHT_FORWARD'),
-            (3, 100000, 'BROUGHT_FORWARD');
+            (2, 100000000, 'BROUGHT_FORWARD'),
+            (3, 100000000, 'BROUGHT_FORWARD');
     """)
     connection.commit()
 

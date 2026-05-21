@@ -1,6 +1,5 @@
 from typing import Optional
 
-
 class Transaction:
     id: int
     source_account_id: int

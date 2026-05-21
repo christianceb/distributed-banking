@@ -43,3 +43,19 @@ python -m grpc_tools.protoc \
     --pyi_out=./bdb \
     --grpc_python_out=./bdb \
     ./protos/InternalBanking.proto
+
+# grpc_generated
+
+python -m grpc_tools.protoc \
+    -I ./protos \
+    --python_out=./grpc_generated \
+    --pyi_out=./grpc_generated \
+    --grpc_python_out=./grpc_generated \
+    ./protos/BankingApp.proto
+
+python -m grpc_tools.protoc \
+    -I ./protos \
+    --python_out=./grpc_generated \
+    --pyi_out=./grpc_generated \
+    --grpc_python_out=./grpc_generated \
+    ./protos/InternalBanking.proto

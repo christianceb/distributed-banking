@@ -1,6 +1,6 @@
 from BankingService import BankingService
 from InternalBanking_pb2_grpc import InternalBankingServicer
-from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, InternalTransactionsByAccountIdRequest, InternalTransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
+from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, AccountTransactionRequest, TransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
 from Common import Transaction
 
 def interceptor(func):
@@ -58,38 +58,35 @@ class GrpcBackend(InternalBankingServicer):
 
         return response
 
-    def GetTransactionsByAccountId(self, request: InternalTransactionsByAccountIdRequest, context) -> InternalTransactionsResponse:
-        response = InternalTransactionsResponse()
-
-        transaction_rows: list[Transaction] = self.banking_service.get_transactions_by_account_id(request.account_id)
-
-        for transaction_row in transaction_rows:
-            transaction = Transaction()
-            
-            response.transactions.add(
-                id = transaction_row['id'],
-                amount = transaction_row['amount'],
-                source_account_id = transaction_row['source_account_id'],
-                destination_account_id = transaction_row['destination_account_id'],
-                message = transaction_row['message'],
-                status = transaction_row['status'],
-                balance = transaction_row['balance'],
-                fees = transaction_row['fees'],
-                kind = transaction_row['kind'],
-                # tries = transaction_row['tries'],
-                timestamp = transaction_row['timestamp'],
-                # updated_at = transaction_row['updated_at'],
-            )
-
-        return response
-
     def AccountByIdExists(self, request: AccountByIdExistsRequest, context) -> AccountByIdExistsResponse:
         response = AccountByIdExistsResponse()
-
 
         if self.banking_service.get_account(request.id):
             response.exists = True
         else:
             response.exists = False
+
+        return response
+
+    def GetAccountTransactionWithId(self, request: AccountTransactionRequest, context) -> TransactionsResponse:
+        response = TransactionsResponse()
+
+        transaction = self.banking_service.get_account_transaction_with_id(request.account_id, request.transaction_id)
+
+        if transaction:
+            response.transactions.add(
+                id = transaction['id'],
+                amount = transaction['amount'],
+                source_account_id = transaction['source_account_id'],
+                destination_account_id = transaction['destination_account_id'],
+                message = transaction['message'],
+                status = transaction['status'],
+                balance = transaction['balance'],
+                fees = transaction['fees'],
+                kind = transaction['kind'],
+                # tries = transaction['tries'],
+                timestamp = transaction['timestamp'],
+                # updated_at = transaction['updated_at'],
+            )
 
         return response

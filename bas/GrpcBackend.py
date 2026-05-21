@@ -1,5 +1,5 @@
 from typing import Optional
-from BankingApp_pb2 import EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, PublicAccountDetailsRequest, PublicAccountDetailsResponse, PublicPaymentIntentRequest, TransactionRequest, TransactionsResponse
+from BankingApp_pb2 import AppTransactionRequest, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentRequest, AppTransactionsResponse
 from BankingApp_pb2_grpc import BankingAppServicer
 from UserTokenService import UserToken, UserTokenService
 from BankingDatabaseService import BankingDatabaseService
@@ -45,8 +45,8 @@ class GrpcBackend(BankingAppServicer):
     def ValidateToken(self, token) -> Optional[UserToken]:
         return self.user_token_service.FindToken(token)
 
-    def GetAccountDetailsByToken(self, request: PublicAccountDetailsRequest, context) -> PublicAccountDetailsResponse:
-        response = PublicAccountDetailsResponse();
+    def GetAccountDetailsByToken(self, request: AppAccountDetailsRequest, context) -> AppAccountDetailsResponse:
+        response = AppAccountDetailsResponse();
     
         user_token = self.ValidateToken(request.token)
 
@@ -62,20 +62,51 @@ class GrpcBackend(BankingAppServicer):
 
         return response
 
-    def GetTransactionById(self, request: TransactionRequest, context) -> TransactionsResponse:
-        pass
-
-    def EvaluatePaymentIntent(self, request: PublicPaymentIntentRequest, context) -> EvaluatePaymentIntentResponse:
+    def GetTransactionById(self, request: AppTransactionRequest, context) -> AppTransactionsResponse:
         user_token = self.ValidateToken(request.token)
-        fees = 0
+        response = AppTransactionsResponse()
+
+        if user_token is not None:
+            transactions = self.data_service.get_account_transaction_with_id(user_token.account_id, request.transaction_id)
+
+            # TODO populate data
+
+            response.transactions
+
+        return response
+
+    def validate_payment_intent(self, amount: int, recipient_account_id: int, user_token: Optional[UserToken]) -> bool:
+        if amount > 0:
+            if user_token and user_token.account_id != recipient_account_id:
+                if self.data_service.account_by_id_exists(recipient_account_id):
+                    return True
+
+        return False
+
+    def EvaluatePaymentIntent(self, request: AppPaymentIntentRequest, context) -> EvaluatePaymentIntentResponse:
+        user_token = self.ValidateToken(request.token)
         valid_payment_intent = False
 
-        if request.amount > 0:
-            if user_token and user_token.account_id != request.recipient_account_id:
-                if self.data_service.account_by_id_exists(request.recipient_account_id):
-                    valid_payment_intent = True
-            
+        if user_token is not None:
+            fees = 0
+            valid_payment_intent = self.validate_payment_intent(request.amount, request.recipient_account_id, user_token)
+
+            if valid_payment_intent:
+                fees = calculate_fees(amount=request.amount)
+
+        return EvaluatePaymentIntentResponse(valid_payment_intent=True, fees=fees)
+
+    def PostPaymentIntent(self, request: AppPaymentIntentRequest, context) -> AppAccountDetailsResponse:
+        user_token = self.ValidateToken(request.token)
+        fees = 0
+        valid_payment_intent = self.validate_payment_intent(request.amount, request.recipient_account_id, user_token)
+        transaction: Optional[Transaction] = None
+
         if valid_payment_intent:
             fees = calculate_fees(amount=request.amount)
 
-        return EvaluatePaymentIntentResponse(valid_payment_intent=True, fees=fees)
+            self.data_service.post_payment_intent()
+
+        response = AppAccountDetailsResponse(transaction=transaction)
+
+        return 

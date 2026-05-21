@@ -3,13 +3,15 @@ syntax = "proto3";
 service BankingApp {
   rpc Login (LoginRequest) returns (LoginResponse) {}
 
-  rpc GetAccountDetailsByToken (PublicAccountDetailsRequest) returns (PublicAccountDetailsResponse) {}
+  rpc GetAccountDetailsByToken (AppAccountDetailsRequest) returns (AppAccountDetailsResponse) {}
 
   // Estimate Payment Intent
-  rpc EvaluatePaymentIntent (PublicPaymentIntentRequest) returns (EvaluatePaymentIntentResponse) {}
+  rpc EvaluatePaymentIntent (AppPaymentIntentRequest) returns (EvaluatePaymentIntentResponse) {}
 
   // Make Payment
-  rpc PostPaymentIntent (PublicPostPaymentIntentRequest) returns (PublicPaymentIntentStoreResponse) {}
+  rpc PostPaymentIntent (AppPostPaymentIntentRequest) returns (AppPaymentIntentStoreResponse) {}
+
+  rpc GetTransactionById (AppTransactionRequest) returns (AppTransactionsResponse) {}
 }
 
 // ---
@@ -19,26 +21,22 @@ message LoginRequest {
   string password = 2;
 }
 
-message PublicAccountDetailsRequest {
+message AppAccountDetailsRequest {
   string token = 1;
 }
 
-message PublicPaymentIntentRequest {
+message AppPaymentIntentRequest {
   string token = 1;
   uint64 recipient_account_id = 2;
   uint64 amount = 3;
 }
 
-message TransactionRequest {
+message AppTransactionRequest {
   string token = 1;
   uint64 transaction_id = 2;
 }
 
-message TransactionsResponse {
-  repeated PublicTransaction transactions = 1;
-}
-
-message PublicPostPaymentIntentRequest {
+message AppPostPaymentIntentRequest {
   string token = 1;
   uint64 amount = 2;
   uint64 recipient_account_id = 3;
@@ -49,14 +47,14 @@ message PublicPostPaymentIntentRequest {
 // Response
 message LoginResponse {
   string token = 1;
-  optional PublicUser user = 2;
+  optional AppUser user = 2;
   optional uint64 user_id = 3;
   optional uint64 account_id = 4;
   bool success = 5;
 }
 
-message PublicAccountDetailsResponse {
-  optional PublicAccountDetails account = 1;
+message AppAccountDetailsResponse {
+  optional AppAccountDetails account = 1;
 }
 
 message EvaluatePaymentIntentResponse {
@@ -64,18 +62,22 @@ message EvaluatePaymentIntentResponse {
   uint64 fees = 2;
 }
 
-message PublicPaymentIntentStoreResponse {
-  PublicTransaction transaction = 1;
+message AppPaymentIntentStoreResponse {
+  optional AppTransaction transaction = 1;
+}
+
+message AppTransactionsResponse {
+  repeated AppTransaction transactions = 1;
 }
 
 // ---
 // Models
-message PublicUser {
+message AppUser {
   uint64 id = 1;
   string username = 2;
 }
 
-message PublicAccountDetails {
+message AppAccountDetails {
   uint64 id = 1;
   int64 user_id = 2;
   int64 current_balance = 3;
@@ -83,7 +85,7 @@ message PublicAccountDetails {
   uint64 updated_at = 5;
 }
 
-message PublicTransaction {
+message AppTransaction {
   uint64 id = 1;
   uint64 amount = 2;
   optional int64 source_account_id = 3;

@@ -180,3 +180,14 @@ class BankingService:
         print("Jobs Processed/Failed: " + str(results['processed']) + "/" + str(results['failed']))
 
         self.close_data_store_connection()
+
+    def get_account_transaction_with_id(self, account_id: int, transaction_id: int):
+        connection = self.init_data_store()
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM transactions WHERE id=? AND account_id=?", (transaction_id, account_id))
+
+        self.close_data_store_connection()
+
+        return cursor.fetchone()

@@ -7,8 +7,7 @@ service InternalBanking {
   rpc AccountByIdExists (AccountByIdExistsRequest) returns (AccountByIdExistsResponse) {}
 
   // Transactions
-  rpc GetTransactionsByAccountId (InternalTransactionsByAccountIdRequest) returns (InternalTransactionsResponse) {}
-  rpc GetTransactionById (InternalTransactionRequest) returns (InternalTransactionsResponse) {}
+  rpc GetAccountTransactionWithId (AccountTransactionRequest) returns (TransactionsResponse) {}
 
   // Store Payment Intent as transaction
   rpc StorePaymentIntent (PaymentIntentRequest) returns (PaymentIntentResponse) {}
@@ -32,12 +31,9 @@ message AccountByIdExistsRequest {
   uint64 id = 1;
 }
 
-message InternalTransactionsByAccountIdRequest {
+message AccountTransactionRequest {
   uint64 account_id = 1;
-}
-
-message InternalTransactionRequest {
-  uint64 id = 1;
+  uint64 transaction_id = 2;
 }
 
 message LogRequest {
@@ -50,6 +46,7 @@ message PaymentIntentRequest {
   uint64 fees = 2;
   uint64 account_id = 3;
   uint64 recipient_account_id = 4;
+  string message = 5;
 }
 
 // ---
@@ -73,7 +70,7 @@ message AccountByIdExistsResponse {
     bool exists = 1;
 }
 
-message InternalTransactionsResponse {
+message TransactionsResponse {
   repeated Transaction transactions = 1;
 }
 

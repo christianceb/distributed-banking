@@ -1,21 +1,25 @@
+import sqlite3
 import time
 
 from BankingService import BankingService
 from dependencies import database
 from migrations import clearMigrateSeed
 
+def worker_job(connection: sqlite3.Connection):
+    banking_service = BankingService(connection)
+
+    banking_service.process_transactions()
 
 def worker_task():
     try:
         connection = database()
 
-        banking_service = BankingService(connection)
-
-        banking_service.process_transactions()
+        worker_job(connection)
     except Exception as e:
         raise e
     finally:
         connection.close()
+
         print("Terminated DB connection")
 
 def worker():
@@ -51,6 +55,10 @@ def main():
         worker()
     elif run_as == 2:
         migrations()
+
+        connection = database()
+        worker_job(connection)
+        connection.close()
 
 if __name__ == "__main__":
     main()

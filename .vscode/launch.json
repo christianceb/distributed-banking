@@ -21,6 +21,12 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/bc/main.py"
+        },
+        {
+            "name": "BDB Worker Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bdb/worker.py"
         }
     ]
 }

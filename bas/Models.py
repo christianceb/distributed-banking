@@ -1,0 +1,13 @@
+class Transaction:
+    id: int
+    source_account_id: int
+    destination_account_id: int
+    amount: int
+    bas: str
+    status: str
+    balance: int
+    fees: int
+    kind: str
+    tries: int
+    timestamp: int
+    updated_at: int
