@@ -1,9 +1,9 @@
 import sqlite3
 
 from sqlite3 import Connection
-from time import time
 from typing import Optional
 from User import User
+from Temporal import iso8601, unix_timestamp_s
 from dependencies import database
 
 
@@ -92,30 +92,56 @@ class BankingService:
 
         return cursor.fetchone()
 
-    def transfer_fees(self, amount):
-        connection = self.init_data_store()
+    def save_transfer_fee_txn(self, source_account_id: int, amount: int,connection: Optional[sqlite3.Connection] = None):
+        connection_passed = False
 
-        bank_account = self.get_account(1)
+        if connection is None:
+            connection = self.init_data_store()
+        else:
+            connection_passed = True
 
-        new_current_balance = bank_account['current_balance']
-        new_available_balance = bank_account['available_balance']
+        # The bank's account ID is always this ID
+        bank_account_id = 1
 
         cursor = connection.cursor()
 
+        # This should be a pending transaction but for simplicity we keep it COMPLETED. You pay the fee upfront after all.
         cursor.execute(
-            'UPDATE accounts SET current_balance=?, available_balance=? WHERE id=?',
-            (new_current_balance, new_available_balance, bank_account['id'])
+            """
+            INSERT INTO transactions (
+                source_account_id,
+                recipient_account_id,
+                amount,
+                fees,
+                status,
+                kind,
+                tries
+            ) VALUES (?, ?, ?, ?, ?, ?, ?);
+            """,
+            (source_account_id, bank_account_id, amount, 0, "PENDING", "FEE", 1)
         )
 
         connection.commit()
 
-        # This should be a pending transaction but for simplicity we keep it
-        cursor.execute(
-            "INSERT INTO transactions (destination_account, amount, status, kind, tries, timestamp)",
-            (bank_account['id'], amount, "COMPLETED", "FEE", 1, int(time()))
-        )
+        if cursor.lastrowid > 0:
+            print(
+                f"[{iso8601()}]: New transaction created",
+                {
+                    "id": cursor.lastrowid,
+                    "source_account_id": source_account_id,
+                    "recipient_account_id": id,
+                    "amount": amount,
+                    "fees": 0,
+                    "kind": "FEE",
+                    "timestamp": unix_timestamp_s(),
+                    "date_time": iso8601()
+                }
+            )
 
-        connection.commit()
+        # If no connection was passed, it means we created a connection and need to release it.
+        # Otherwise, let the caller terminate it themselves
+        if connection_passed is False:
+            self.close_data_store_connection()
 
     def process_transactions(self):
         # Reference for future use re: current/available: https://www.bankrate.com/banking/checking/what-is-your-available-balance/
@@ -133,44 +159,40 @@ class BankingService:
         }
 
         for transaction in rows:
-            fees = 0 if transaction['fees'] is None else transaction['fees']
+            transaction_amount_w_fees = transaction['amount'] + (transaction['fees'] or 0)
 
             # If this passes, it means that somebody (source_account_id) is trying to send money elsewhere (recipient_account_id)
+            # Because all transactions are already debited to begin with from the sender, we only complete the transaction by
+            # committing the updates to the recipient and reconciling the balances including the sender
             if transaction['source_account_id'] is not None:
                 # Debit the sender first
                 source_account = self.get_account(transaction['source_account_id'])
 
-                new_source_account_current_balance = source_account['current_balance'] - transaction['amount']
+                new_source_account_current_balance = source_account['current_balance'] - transaction_amount_w_fees
 
-                if new_source_account_current_balance > 0:
-                    cursor.execute(
-                        "UPDATE accounts SET current_balance=? WHERE id=?",
-                        (new_source_account_current_balance, source_account['id'])
-                    )
+                # Set sender current balance
+                cursor.execute(
+                    "UPDATE accounts SET current_balance=? WHERE id=?",
+                    (new_source_account_current_balance, source_account['id'])
+                )
 
-                    cursor.execute(
-                        "UPDATE transactions SET status=?, balance=?, tries=? WHERE id=?",
-                        ("COMPLETED", new_source_account_current_balance, transaction['tries'] + 1, transaction['source_account_id'])
-                    )
+                print(
+                    f"[{iso8601()}]: Account balance for source account updated",
+                    {
+                        "account_id": source_account['id'],
+                        "from_current_balance": source_account['current_balance'],
+                        "from_available_balance": source_account['available_balance'],
+                        "to_current_balance": new_source_account_current_balance, # The only value that updated
+                        "to_available_balance": source_account['available_balance'],
+                    }
+                )
 
-                    connection.commit();
-                
-                    self.transfer_fees(fees)
-                else:
-                    cursor.execute(
-                        "UPDATE accounts SET available_balance=? WHERE id=?",
-                        (source_account['current_balance'], source_account['id'])
-                    )
+            # Now we update the recipient's account
 
-                    cursor.execute(
-                        "UPDATE transactions SET status=?, balance=?, tries=? WHERE id=?",
-                        ("FAILED", new_source_account_current_balance, transaction['tries'] + 1, transaction['source_account_id'])
-                    )
-
-            # Get the destination account
+            # Get the recipient account
             recipient_account = self.get_account(transaction['recipient_account_id'])
 
-            amount_without_fees = transaction['amount'] - fees
+            amount_without_fees = transaction['amount']
 
             new_recipient_current_balance = recipient_account['current_balance'] + amount_without_fees
             new_recipient_available_balance = recipient_account['available_balance'] + amount_without_fees
@@ -180,7 +202,7 @@ class BankingService:
             connection.commit()
 
             print(
-                "Account balance for account updated",
+                f"[{iso8601()}]: Account balance for recipient account updated",
                 {
                     "account_id": transaction['recipient_account_id'],
                     "from_current_balance": recipient_account['current_balance'],
@@ -190,15 +212,17 @@ class BankingService:
                 }
             )
 
-            tries = transaction['tries']+1
+            tries = transaction['tries'] + 1
+
             cursor.execute(
                 "UPDATE transactions SET status=?, tries=? WHERE id=? AND updated_at=?",
                 ("COMPLETED", tries, transaction['id'], transaction['updated_at'])
             )
+
             connection.commit()
 
             print(
-                "Transaction completed",
+                f"[{iso8601()}]: Transaction completed",
                 {
                     "transaction_id": transaction['id'],
                     "updated_at": transaction['updated_at'],
@@ -208,7 +232,7 @@ class BankingService:
 
             results['processed'] += 1
 
-        print("Jobs Processed/Failed: " + str(results['processed']) + "/" + str(results['failed']))
+        print("Jobs Processed: " + str(results['processed']))
 
         self.close_data_store_connection()
 
@@ -271,6 +295,19 @@ class BankingService:
                 (new_available_balance, account_id)
             )
 
+            connection.commit()
+
+            print(
+                f"[{iso8601()}]: Account balance for source account updated",
+                {
+                    "account_id": account['id'],
+                    "from_current_balance": account['current_balance'],
+                    "from_available_balance": account['available_balance'],
+                    "to_current_balance": account['current_balance'],
+                    "to_available_balance": new_available_balance,
+                }
+            )
+
             result = True
 
         # If no connection was passed, it means we created a connection and need to release it.
@@ -315,6 +352,22 @@ class BankingService:
 
         if cursor.lastrowid is not None:
             transaction = self.get_transaction_with_id(cursor.lastrowid, connection)
+
+            print(
+                f"[{iso8601()}]: New transaction created",
+                {
+                    "id": cursor.lastrowid,
+                    "source_account_id": account_id,
+                    "recipient_account_id": recipient_account_id,
+                    "amount": amount,
+                    "fees": fees,
+                    "kind": "TRANSFER",
+                    "timestamp": unix_timestamp_s(),
+                    "date_time": iso8601()
+                }
+            )
+
+        self.save_transfer_fee_txn(account_id, fees, connection)
 
         self.close_data_store_connection()
 

@@ -39,14 +39,15 @@ class UtilityInterceptor(grpc.ServerInterceptor):
         try:
             connection = database()
             worker_job(connection)
-        except:
-            # Do nothing
-            pass
+        except Exception as e:
+            connection.close()
+            raise e
         finally:
             connection.close()
 
     def after_hook(self):
-        print("After Hook")
+        pass
+        # print("After Hook")
 
 class Backend:
     port = "50061"

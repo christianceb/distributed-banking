@@ -4,7 +4,7 @@ from grpc import Channel
 import grpc
 
 from BankingApp_pb2_grpc import BankingAppStub
-from BankingApp_pb2 import AppTransactionRequest, AppTransactionsResponse, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppPaymentIntentRequest, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentStoreResponse, AppPostPaymentIntentRequest
+from BankingApp_pb2 import AppTransaction, AppTransactionRequest, AppTransactionsResponse, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppPaymentIntentRequest, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentStoreResponse, AppPostPaymentIntentRequest
 from Models import TransactionModel
 
 
@@ -41,18 +41,7 @@ class BasService:
         response: AppTransactionsResponse = self.stub.GetTransactionById(request)
 
         if len(response.transactions):
-            transaction = TransactionModel()
-            response_txn = response.transactions[0]
-
-            transaction.id = response_txn.id
-            transaction.source_account_id = response_txn.source_account_id
-            transaction.recipient_account_id = response_txn.recipient_account_id
-            transaction.amount = response_txn.amount
-            transaction.status = response_txn.status
-            transaction.fees = response_txn.fees
-            transaction.kind = response_txn.kind
-            transaction.timestamp = response_txn.timestamp
-            transaction.updated_at = response_txn.updated_at
+            transaction = self.from_protoc_transaction_to_object(response.transactions[0])
 
             return transaction
         
@@ -72,12 +61,26 @@ class BasService:
         response: AppPaymentIntentStoreResponse = self.stub.PostPaymentIntent(request)
 
         if response.transaction:
-            transaction = TransactionModel(
-                # TODO
-            )
+            transaction = self.from_protoc_transaction_to_object(response.transaction)
+
             return transaction
 
         return None
+
+    def from_protoc_transaction_to_object(self, protoc_transaction: AppTransaction) -> TransactionModel:
+        transaction = TransactionModel()
+    
+        transaction.id = protoc_transaction.id
+        transaction.source_account_id = protoc_transaction.source_account_id
+        transaction.recipient_account_id = protoc_transaction.recipient_account_id
+        transaction.amount = protoc_transaction.amount
+        transaction.status = protoc_transaction.status
+        transaction.fees = protoc_transaction.fees
+        transaction.kind = protoc_transaction.kind
+        transaction.timestamp = protoc_transaction.timestamp
+        transaction.updated_at = protoc_transaction.updated_at
+    
+        return transaction
 
     def __del__(self):
         # Prevent dangling connections which may exhaust connection pool threads

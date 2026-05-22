@@ -222,16 +222,18 @@ Date/Time Processed: \t\t{unix_timestamp_to_iso8601(transaction.updated_at)}
                     elif confirm == "y":
                         valid_confirm_input = True
 
-                self.bas_service.post_payment_intent(
+                transaction = self.bas_service.post_payment_intent(
                     self.session_data.token,
                     recipient_account_id,
                     transfer_amount,
                     message
                 )
 
-                print("Your payment has been received")
-                print("Transfer amount: 100.10")
-                print("Transfer fee: 0.10")
-                print("Message: hi!")
+                print("\nYour payment has been received")
+                print(f"Transfer ID: {transaction.id}")
+                print(f"Transfer amount: {int_cents_to_localised(transaction.amount)}")
+                print(f"Transfer fee: {int_cents_to_localised(transaction.fees)}")
+                print(f"Recipient ID: {transaction.recipient_account_id}")
+                print(f"Message: {message}")
 
                 choice = self.MENU_EXIT
