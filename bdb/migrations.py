@@ -92,9 +92,9 @@ def clearMigrateSeed():
         insert into users
             (username, password)
         values
-            ('bank', 'password1'),
-            ('primary', 'password2'),
-            ('secundus', 'password3');
+            ('bank', 'password'),
+            ('primary', 'password1'),
+            ('secundus', 'password2');
     """)
     connection.commit()
 
@@ -112,19 +112,10 @@ def clearMigrateSeed():
         insert into transactions
             (recipient_account_id, amount, kind)
         values
-            (2, 100000000, 'BROUGHT_FORWARD'),
-            (3, 100000000, 'BROUGHT_FORWARD');
+            (2, 10000000000, 'BROUGHT_FORWARD'),
+            (3, 10000000000, 'BROUGHT_FORWARD');
     """)
     connection.commit()
-
-    """
-    # Test transaction for processing transfers
-    INSERT INTO transactions
-        (source_account_id, recipient_account_id, amount, fees, kind)
-    VALUES
-        (2, 3, 10000, 100, 'TRANSFER');
-    UPDATE accounts SET available_balance=89900 WHERE id=2
-    """
 
     connection.close()
 

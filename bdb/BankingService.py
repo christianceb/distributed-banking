@@ -164,7 +164,7 @@ class BankingService:
             # If this passes, it means that somebody (source_account_id) is trying to send money elsewhere (recipient_account_id)
             # Because all transactions are already debited to begin with from the sender, we only complete the transaction by
             # committing the updates to the recipient and reconciling the balances including the sender
-            if transaction['source_account_id'] is not None:
+            if transaction['source_account_id'] is not None and transaction['kind'] != "FEE": # Prevent additional debit if txn is fee
                 # Debit the sender first
                 source_account = self.get_account(transaction['source_account_id'])
 
@@ -241,7 +241,7 @@ class BankingService:
 
         cursor = connection.cursor()
 
-        cursor.execute("SELECT * FROM transactions WHERE id=? AND recipient_account_id=?", (transaction_id, account_id))
+        cursor.execute("SELECT * FROM transactions WHERE id=? AND (recipient_account_id=? OR source_account_id=?)", (transaction_id, account_id, account_id))
 
         row = cursor.fetchone()
 
