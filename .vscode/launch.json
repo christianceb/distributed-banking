@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "cwd": "${workspaceFolder}/bdb/",
             "name": "BDB Debug",
             "type": "debugpy",
             "request": "launch",
@@ -23,6 +24,7 @@
             "program": "${workspaceFolder}/bc/main.py"
         },
         {
+            "cwd": "${workspaceFolder}/bdb/",
             "name": "BDB Worker Debug",
             "type": "debugpy",
             "request": "launch",
