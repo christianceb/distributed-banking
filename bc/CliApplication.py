@@ -152,22 +152,21 @@ class CliApplication:
 
     def print_transaction(self, transaction: TransactionModel):
         current_account_id = self.session_data.account_id
-        fee_string = "\nFees: " + int_cents_to_localised(transaction.fees) if current_account_id == transaction.source_account_id else ""
+        fee_string = "\nFees: \t\t\t\t" + int_cents_to_localised(transaction.fees) if current_account_id == transaction.source_account_id else ""
         is_credit = transaction.recipient_account_id == current_account_id
-        source_account_id_string = "Source Account ID: " + str(transaction.source_account_id) if transaction.source_account_id != 0 else "Source: \t\t\tSystem Generated"
+        source_account_id_string = "Source Account ID: \t\t" + str(transaction.source_account_id) if transaction.source_account_id != 0 else "Source: \t\t\tSystem Generated"
 
         print(f"""
 ---
 Transaction ID: \t\t{transaction.id}
 Amount: \t\t\t{"+" if is_credit else "-"}{int_cents_to_localised(transaction.amount)}
 {source_account_id_string}
-Recipient Account ID: \t{transaction.recipient_account_id}
+Recipient Account ID: \t\t{transaction.recipient_account_id}
 Status: \t\t\t{transaction.status}{fee_string}
 Kind: \t\t\t\t{transaction.kind}
 Date/Time Submitted: \t\t{unix_timestamp_to_iso8601(transaction.timestamp)}
 Date/Time Processed: \t\t{unix_timestamp_to_iso8601(transaction.updated_at)}
----
-        """)
+---""")
 
     def make_payment(self):
         choice: str = self.MENU_WAITING_INPUT
@@ -210,7 +209,8 @@ Date/Time Processed: \t\t{unix_timestamp_to_iso8601(transaction.updated_at)}
 
                 while valid_confirm_input is False:
                     try:
-                        confirm = input("\nConfirm and submit payment? [y/n]: ").lower()
+                        print("\n---\n")
+                        confirm = input("Confirm and submit payment? [y/n]: ").lower()
                     except:
                         continue
 
@@ -229,11 +229,15 @@ Date/Time Processed: \t\t{unix_timestamp_to_iso8601(transaction.updated_at)}
                     message
                 )
 
-                print("\nYour payment has been received")
-                print(f"Transfer ID: {transaction.id}")
-                print(f"Transfer amount: {int_cents_to_localised(transaction.amount)}")
-                print(f"Transfer fee: {int_cents_to_localised(transaction.fees)}")
-                print(f"Recipient ID: {transaction.recipient_account_id}")
-                print(f"Message: {message}")
+                print("\n---\n")
+
+                print("Your payment has been received\n")
+                print(f"Transfer ID: \t\t{transaction.id}")
+                print(f"Transfer amount: \t{int_cents_to_localised(transaction.amount)}")
+                print(f"Transfer fee: \t\t{int_cents_to_localised(transaction.fees)}")
+                print(f"Recipient ID: \t\t{transaction.recipient_account_id}")
+                print(f"Message: \t\t{message}")
 
                 choice = self.MENU_EXIT
+
+                input("\nPress [enter] to go back")
