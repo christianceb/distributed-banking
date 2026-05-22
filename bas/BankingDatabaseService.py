@@ -35,11 +35,21 @@ class BankingDatabaseService:
         response: TransactionsResponse = self.stub.GetAccountTransactionWithId(request)
 
         if len(response.transactions):
-            transaction = TransactionModel()
+            return response.transactions[0]
+            # transaction = TransactionModel()
+            # response_txn = response.transactions[0]
 
-            # TODO populate with data
+            # transaction.id = response_txn.id
+            # transaction.source_account_id = response_txn.source_account_id
+            # transaction.recipient_account_id = response_txn.recipient_account_id
+            # transaction.amount = response_txn.amount
+            # transaction.status = response_txn.status
+            # transaction.fees = response_txn.fees
+            # transaction.kind = response_txn.kind
+            # transaction.timestamp = response_txn.timestamp
+            # transaction.updated_at = response_txn.updated_at
 
-            return transaction
+            # return transaction
 
         return None
 
@@ -67,12 +77,11 @@ class BankingDatabaseService:
 
             transaction.id = response_txn.id
             transaction.source_account_id = response_txn.source_account_id
-            transaction.destination_account_id = response_txn.destination_account_id
+            transaction.recipient_account_id = response_txn.recipient_account_id
             transaction.amount = response_txn.amount
             transaction.status = response_txn.status
             transaction.fees = response_txn.fees
             transaction.kind = response_txn.kind
-            transaction.tries = response_txn.tries
             transaction.timestamp = response_txn.timestamp
             transaction.updated_at = response_txn.updated_at
 

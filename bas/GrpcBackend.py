@@ -1,5 +1,5 @@
 from typing import Optional
-from BankingApp_pb2 import AppTransactionRequest, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentRequest, AppTransactionsResponse
+from BankingApp_pb2 import AppPaymentIntentStoreResponse, AppTransactionRequest, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentRequest, AppTransactionsResponse
 from BankingApp_pb2_grpc import BankingAppServicer
 from UserTokenService import UserToken, UserTokenService
 from BankingDatabaseService import BankingDatabaseService
@@ -68,11 +68,20 @@ class GrpcBackend(BankingAppServicer):
         response = AppTransactionsResponse()
 
         if user_token is not None:
-            transactions = self.data_service.get_account_transaction_with_id(user_token.account_id, request.transaction_id)
+            transaction = self.data_service.get_account_transaction_with_id(user_token.account_id, request.transaction_id)
 
-            # TODO populate data
-
-            response.transactions
+            if transaction:
+                response.transactions.add(
+                    id=transaction.id,
+                    source_account_id=transaction.source_account_id,
+                    recipient_account_id=transaction.recipient_account_id,
+                    amount=transaction.amount,
+                    status=transaction.status,
+                    fees=transaction.fees,
+                    kind=transaction.kind,
+                    timestamp=transaction.timestamp,
+                    updated_at=transaction.updated_at
+                )
 
         return response
 
@@ -98,11 +107,19 @@ class GrpcBackend(BankingAppServicer):
             if valid_payment_intent:
                 fees = calculate_fees(amount=request.amount)
 
+            # One more validity check to ensure that the account has enough balance to make this transaction
+            account = self.data_service.get_account_by_user_id(user_token.user_id).account
+            transaction_total_amount = fees + request.amount
+
+            valid_payment_intent = (account.available_balance - transaction_total_amount) > 0
+
+        fees = 0 if valid_payment_intent is False else fees
+
         return EvaluatePaymentIntentResponse(valid_payment_intent=valid_payment_intent, fees=fees)
 
     def PostPaymentIntent(self, request: AppPaymentIntentRequest, context) -> AppAccountDetailsResponse:
         user_token = self.ValidateToken(request.token)
-        response = AppAccountDetailsResponse()
+        response = AppPaymentIntentStoreResponse()
         
         transaction: Optional[TransactionModel] = None
 
@@ -121,6 +138,14 @@ class GrpcBackend(BankingAppServicer):
                     request.message
                 )
 
-                response.transaction = transaction
+                response.transaction.id = transaction.id
+                response.transaction.source_account_id = transaction.source_account_id
+                response.transaction.recipient_account_id = transaction.recipient_account_id
+                response.transaction.amount = transaction.amount
+                response.transaction.status = transaction.status
+                response.transaction.fees = transaction.fees
+                response.transaction.kind = transaction.kind
+                response.transaction.timestamp = transaction.timestamp
+                response.transaction.updated_at = transaction.updated_at
 
         return response

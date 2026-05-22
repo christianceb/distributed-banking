@@ -1,15 +1,14 @@
 from typing import Optional
 
-class Transaction:
+class TransactionModel:
     id: int
     source_account_id: int
-    destination_account_id: int
+    recipient_account_id: int
     amount: int
     bas: str
     status: str
     fees: int
     kind: str
-    tries: int
     timestamp: int
     updated_at: int
 

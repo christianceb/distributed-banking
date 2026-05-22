@@ -57,9 +57,12 @@ def main():
     elif run_as == 2:
         migrations()
 
-        connection = database()
-        worker_job(connection)
-        connection.close()
+        run_single_task_after_migrating = False
+
+        if run_single_task_after_migrating:
+            connection = database()
+            worker_job(connection)
+            connection.close()
 
 if __name__ == "__main__":
     main()

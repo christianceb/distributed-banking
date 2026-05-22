@@ -5,7 +5,7 @@ import grpc
 
 from BankingApp_pb2_grpc import BankingAppStub
 from BankingApp_pb2 import AppTransactionRequest, AppTransactionsResponse, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppPaymentIntentRequest, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentStoreResponse, AppPostPaymentIntentRequest
-from Models import Transaction
+from Models import TransactionModel
 
 
 class BasService:
@@ -36,22 +36,21 @@ class BasService:
 
         return None
 
-    def get_transaction(self, token: str, transaction_id: int) -> Optional[Transaction]:
+    def get_transaction(self, token: str, transaction_id: int) -> Optional[TransactionModel]:
         request: AppTransactionRequest = AppTransactionRequest(token=token, transaction_id=transaction_id)
         response: AppTransactionsResponse = self.stub.GetTransactionById(request)
 
         if len(response.transactions):
-            transaction = Transaction()
+            transaction = TransactionModel()
             response_txn = response.transactions[0]
 
             transaction.id = response_txn.id
             transaction.source_account_id = response_txn.source_account_id
-            transaction.destination_account_id = response_txn.destination_account_id
+            transaction.recipient_account_id = response_txn.recipient_account_id
             transaction.amount = response_txn.amount
             transaction.status = response_txn.status
             transaction.fees = response_txn.fees
             transaction.kind = response_txn.kind
-            transaction.tries = response_txn.tries
             transaction.timestamp = response_txn.timestamp
             transaction.updated_at = response_txn.updated_at
 
@@ -68,12 +67,12 @@ class BasService:
 
         return None
 
-    def post_payment_intent(self, token: str, recipient_account_id: int, amount: int, message: str = "") -> Optional[Transaction]:
+    def post_payment_intent(self, token: str, recipient_account_id: int, amount: int, message: str = "") -> Optional[TransactionModel]:
         request = AppPostPaymentIntentRequest(token=token, recipient_account_id=recipient_account_id, amount=amount, message=message)
         response: AppPaymentIntentStoreResponse = self.stub.PostPaymentIntent(request)
 
         if response.transaction:
-            transaction = Transaction(
+            transaction = TransactionModel(
                 # TODO
             )
             return transaction

@@ -44,7 +44,7 @@ def clearMigrateSeed():
         (
             id integer not null constraint transactions_pk primary key autoincrement,
             source_account_id integer constraint transactions_accounts_id_fk references accounts,
-            destination_account_id integer not null constraint transactions_accounts_id_fk_2 references accounts,
+            recipient_account_id integer not null constraint transactions_accounts_id_fk_2 references accounts,
             amount integer not null,
             message text,
             status varchar(255) default 'PENDING' not null,
@@ -110,7 +110,7 @@ def clearMigrateSeed():
 
     cursor.execute("""
         insert into transactions
-            (destination_account_id, amount, kind)
+            (recipient_account_id, amount, kind)
         values
             (2, 100000000, 'BROUGHT_FORWARD'),
             (3, 100000000, 'BROUGHT_FORWARD');
@@ -120,7 +120,7 @@ def clearMigrateSeed():
     """
     # Test transaction for processing transfers
     INSERT INTO transactions
-        (source_account_id, destination_account_id, amount, fees, kind)
+        (source_account_id, recipient_account_id, amount, fees, kind)
     VALUES
         (2, 3, 10000, 100, 'TRANSFER');
     UPDATE accounts SET available_balance=89900 WHERE id=2

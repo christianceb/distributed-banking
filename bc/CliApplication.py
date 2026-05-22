@@ -3,7 +3,7 @@ from typing import Optional
 from BasService import BasService
 from CurrencyHelper import inputted_amount_to_cents, int_cents_to_localised
 from Temporal import unix_timestamp_s, unix_timestamp_to_iso8601
-from Models import SessionData, Transaction, User
+from Models import SessionData, TransactionModel, User
 from Utils import render_txn_amount
 
 
@@ -45,7 +45,7 @@ class CliApplication:
 
                 break;
             except:
-                print("\nFailed to login. Check credentials.\n\n---")
+                print("\nFailed to login. Check credentials or service might be down.\n\n---")
 
                 continue
 
@@ -54,10 +54,10 @@ class CliApplication:
     def printAccountOverview(self):
         overview = self.bas_service.get_account_by_token(self.session_data.token)
 
-        print("Logged in as: " + self.session_data.user.username + f" (User ID: {self.session_data.user_id}; Account ID: {self.session_data.account_id})")
-        print("Balances as of: " + unix_timestamp_to_iso8601(unix_timestamp_s()))
-        print("Account current balance: " + int_cents_to_localised(overview.current_balance))
-        print("Account available balance: " + int_cents_to_localised(overview.available_balance))
+        print("Logged in as: \t\t\t" + self.session_data.user.username + f" (User ID: {self.session_data.user_id}; Account ID: {self.session_data.account_id})")
+        print("Balances as of: \t\t" + unix_timestamp_to_iso8601(unix_timestamp_s()))
+        print("Account current balance: \t" + int_cents_to_localised(overview.current_balance))
+        print("Account available balance: \t" + int_cents_to_localised(overview.available_balance))
 
     def printTransactions(self):
         pass
@@ -150,18 +150,23 @@ class CliApplication:
 
             exit_menu_loop = self.MENU_EXIT
 
-    def print_transaction(self, transaction: Transaction):
+    def print_transaction(self, transaction: TransactionModel):
+        current_account_id = self.session_data.account_id
+        fee_string = "\nFees: " + int_cents_to_localised(transaction.fees) if current_account_id == transaction.source_account_id else ""
+        is_credit = transaction.recipient_account_id == current_account_id
+        source_account_id_string = "Source Account ID: " + str(transaction.source_account_id) if transaction.source_account_id != 0 else "Source: \t\t\tSystem Generated"
+
         print(f"""
-            ---
-            Transaction ID: {transaction.id}
-            Amount: {transaction.amount}
-            Source Account ID: {transaction.source_account_id}
-            Destination Account ID: {transaction.destination_account_id}
-            Status: {transaction.status}
-            Fees: {transaction.fees}
-            Kind: {transaction.fees}
-            Timestamp: {transaction.timestamp}
-            ---
+---
+Transaction ID: \t\t{transaction.id}
+Amount: \t\t\t{"+" if is_credit else "-"}{int_cents_to_localised(transaction.amount)}
+{source_account_id_string}
+Recipient Account ID: \t{transaction.recipient_account_id}
+Status: \t\t\t{transaction.status}{fee_string}
+Kind: \t\t\t\t{transaction.kind}
+Date/Time Submitted: \t\t{unix_timestamp_to_iso8601(transaction.timestamp)}
+Date/Time Processed: \t\t{unix_timestamp_to_iso8601(transaction.updated_at)}
+---
         """)
 
     def make_payment(self):
@@ -193,7 +198,9 @@ class CliApplication:
             else:
                 transfer_total = transfer_amount + payment_intent_fees
 
-                print("\nPayment will be sent to account with ID: " + str(recipient_account_id))
+                print("\n---\n")
+
+                print("Payment will be sent to account with ID: " + str(recipient_account_id))
                 print("Transfer amount: " + int_cents_to_localised(transfer_amount))
                 print("Transfer fee: " + int_cents_to_localised(payment_intent_fees))
                 print("Total transfer (incl fees): " + int_cents_to_localised(transfer_total))
@@ -215,14 +222,16 @@ class CliApplication:
                     elif confirm == "y":
                         valid_confirm_input = True
 
-                        self.bas_service.post_payment_intent(
-                            self.session_data.token,
-                            recipient_account_id,
-                            transfer_amount,
-                            message
-                        )
+                self.bas_service.post_payment_intent(
+                    self.session_data.token,
+                    recipient_account_id,
+                    transfer_amount,
+                    message
+                )
 
-                        print("Your payment has been received")
-                        print("Transfer amount: 100.10")
-                        print("Transfer fee: 0.10")
-                        print("Message: hi!")
+                print("Your payment has been received")
+                print("Transfer amount: 100.10")
+                print("Transfer fee: 0.10")
+                print("Message: hi!")
+
+                choice = self.MENU_EXIT
