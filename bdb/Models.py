@@ -1,11 +1,10 @@
-class Transaction:
+class TransactionModel:
     id: int
     source_account_id: int
     destination_account_id: int
     amount: int
     message: str
     status: str
-    balance: int
     fees: int
     kind: str
     tries: int

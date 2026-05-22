@@ -2,7 +2,7 @@ import grpc
 from typing import Optional
 from InternalBanking_pb2_grpc import InternalBankingStub
 from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, AccountTransactionRequest, TransactionsResponse, PaymentIntentRequest, PaymentIntentResponse, UserByCredentialsRequest, UserByCredentialsResponse
-from Models import Transaction
+from Models import TransactionModel
 
 
 class BankingDatabaseService:
@@ -30,12 +30,12 @@ class BankingDatabaseService:
 
         return response
 
-    def get_account_transaction_with_id(self, account_id: int, transaction_id: int) -> Optional[Transaction]:
+    def get_account_transaction_with_id(self, account_id: int, transaction_id: int) -> Optional[TransactionModel]:
         request: AccountTransactionRequest = AccountTransactionRequest(account_id=account_id, transaction_id=transaction_id)
         response: TransactionsResponse = self.stub.GetAccountTransactionWithId(request)
 
         if len(response.transactions):
-            transaction = Transaction()
+            transaction = TransactionModel()
 
             # TODO populate with data
 
@@ -49,12 +49,34 @@ class BankingDatabaseService:
 
         return response.exists
 
-    def post_payment_intent(self, account_id: int, recipient_account_id: int, fees: int, amount: int, message: str) -> Optional[Transaction]:
+    def post_payment_intent(
+            self,
+            account_id: int,
+            recipient_account_id: int,
+            fees: int,
+            amount: int,
+            message: str
+        ) -> Optional[TransactionModel]:
         request: PaymentIntentRequest = PaymentIntentRequest(account_id=account_id, recipient_account_id=recipient_account_id, fees=fees, amount=amount, message=message)
         response: PaymentIntentResponse = self.stub.StorePaymentIntent(request)
 
         if response.transaction:
-            transaction = Transaction()
+            response_txn = response.transaction
+
+            transaction = TransactionModel()
+
+            transaction.id = response_txn.id
+            transaction.source_account_id = response_txn.source_account_id
+            transaction.destination_account_id = response_txn.destination_account_id
+            transaction.amount = response_txn.amount
+            transaction.status = response_txn.status
+            transaction.fees = response_txn.fees
+            transaction.kind = response_txn.kind
+            transaction.tries = response_txn.tries
+            transaction.timestamp = response_txn.timestamp
+            transaction.updated_at = response_txn.updated_at
+
+            # May return None if unsuccessful
             return transaction
         
         return None

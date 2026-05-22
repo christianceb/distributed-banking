@@ -1,7 +1,7 @@
 from BankingService import BankingService
 from InternalBanking_pb2_grpc import InternalBankingServicer
-from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, AccountTransactionRequest, TransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
-from Common import Transaction
+from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, AccountTransactionRequest, PaymentIntentRequest, PaymentIntentResponse, TransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
+from bdb.Models import TransactionModel
 
 def interceptor(func):
     def inner(*args, **kwargs):
@@ -49,7 +49,6 @@ class GrpcBackend(InternalBankingServicer):
         response = AccountByUserIdResponse()
 
         account = self.banking_service.get_account_by_user_id(request.user_id)
-
         response.account.id = account['id']
         response.account.user_id = account['user_id']
         response.account.current_balance = account['current_balance']
@@ -81,12 +80,37 @@ class GrpcBackend(InternalBankingServicer):
                 destination_account_id = transaction['destination_account_id'],
                 message = transaction['message'],
                 status = transaction['status'],
-                balance = transaction['balance'],
                 fees = transaction['fees'],
                 kind = transaction['kind'],
-                # tries = transaction['tries'],
+                tries = transaction['tries'],
                 timestamp = transaction['timestamp'],
-                # updated_at = transaction['updated_at'],
+                updated_at = transaction['updated_at'],
             )
+
+        return response
+
+    def StorePaymentIntent(self, request: PaymentIntentRequest, context) -> PaymentIntentResponse:
+        response = PaymentIntentResponse()
+
+        transaction = self.banking_service.new_transaction(
+            request.account_id,
+            request.recipient_account_id,
+            request.amount,
+            request.fees,
+            request.message
+        )
+
+        if transaction:
+            response.transaction.id = transaction['id'],
+            response.transaction.amount = transaction['amount'],
+            response.transaction.source_account_id = transaction['source_account_id'],
+            response.transaction.destination_account_id = transaction['destination_account_id'],
+            response.transaction.message = transaction['message'],
+            response.transaction.status = transaction['status'],
+            response.transaction.fees = transaction['fees'],
+            response.transaction.kind = transaction['kind'],
+            response.transaction.tries = transaction['tries'],
+            response.transaction.timestamp = transaction['timestamp'],
+            response.transaction.updated_at = transaction['updated_at'],
 
         return response

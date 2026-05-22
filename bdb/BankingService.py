@@ -16,8 +16,6 @@ class BankingService:
         if db_connection is not None:
             self.db_connection = db_connection
 
-        pass
-
     def get_transactions_by_account_id(self, account_id):
         connection = self.init_data_store()
 
@@ -104,8 +102,8 @@ class BankingService:
 
         # This should be a pending transaction but for simplicity we keep it
         cursor.execute(
-            "INSERT INTO transactions (destination_account, amount, status, balance, kind, tries, timestamp)",
-            (bank_account['id'], amount, "COMPLETED", new_current_balance, "FEE", 1, int(time()))
+            "INSERT INTO transactions (destination_account, amount, status, kind, tries, timestamp)",
+            (bank_account['id'], amount, "COMPLETED", "FEE", 1, int(time()))
         )
 
         connection.commit()
@@ -128,6 +126,7 @@ class BankingService:
         for transaction in rows:
             fees = 0 if transaction['fees'] is None else transaction['fees']
 
+            # If this passes, it means that somebody (source_account_id) is trying to send money elsewhere (destination_account_id)
             if transaction['source_account_id'] is not None:
                 # Debit the sender first
                 source_account = self.get_account(transaction['source_account_id'])
@@ -162,18 +161,41 @@ class BankingService:
             # Get the destination account
             destination_account = self.get_account(transaction['destination_account_id'])
 
-            new_destination_current_balance = destination_account['current_balance'] + (transaction['amount'] - fees)
-            new_destination_available_balance = destination_account['available_balance'] + (transaction['amount'] - fees)
+            amount_without_fees = transaction['amount'] - fees
+
+            new_destination_current_balance = destination_account['current_balance'] + amount_without_fees
+            new_destination_available_balance = destination_account['available_balance'] + amount_without_fees
 
             cursor.execute("UPDATE accounts SET current_balance=?, available_balance=? WHERE id = ?", (new_destination_current_balance, new_destination_available_balance, transaction['destination_account_id']))
 
             connection.commit()
 
+            print(
+                "Account balance for account updated",
+                {
+                    "account_id": transaction['destination_account_id'],
+                    "from_current_balance": destination_account['current_balance'],
+                    "from_available_balance": destination_account['available_balance'],
+                    "to_current_balance": new_destination_current_balance,
+                    "to_available_balance": new_destination_available_balance
+                }
+            )
+
+            tries = transaction['tries']+1
             cursor.execute(
-                "UPDATE transactions SET status=?, balance=?, tries=? WHERE id=? AND updated_at=?",
-                ("COMPLETED", new_destination_current_balance, transaction['tries']+1, transaction['id'], transaction['updated_at'])
+                "UPDATE transactions SET status=?, tries=? WHERE id=? AND updated_at=?",
+                ("COMPLETED", tries, transaction['id'], transaction['updated_at'])
             )
             connection.commit()
+
+            print(
+                "Transaction completed",
+                {
+                    "transaction_id": transaction['id'],
+                    "updated_at": transaction['updated_at'],
+                    "tries": tries,
+                }
+            )
 
             results['processed'] += 1
 
@@ -191,3 +213,62 @@ class BankingService:
         self.close_data_store_connection()
 
         return cursor.fetchone()
+
+    def get_transaction_with_id(self, id: int, connection: Optional[sqlite3.Connection] = None):
+        connection_passed = False
+
+        if connection is None:
+            connection = self.init_data_store()
+        else:
+            connection_passed = False
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM transactions WHERE id=?", (id))
+
+        transaction_row = cursor.fetchone()
+
+        connection.commit()
+
+        if connection_passed is True:
+            connection.close()
+        else:
+            self.close_data_store_connection()
+
+        return transaction_row
+
+    def new_transaction(self,
+        account_id:int,
+        recipient_account_id:int,
+        amount:int,
+        fees:int,
+        message:str
+    ):
+        connection = self.init_data_store()
+
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            insert into transactions
+                (
+                    source_account_id,
+                    destination_account_id,
+                    amount,
+                    status,
+                    fees,
+                    kind
+                )
+            values
+                (?, ?, ?, ?, ?, ?);
+        """, (account_id, recipient_account_id, amount, fees, message))
+
+        connection.commit()
+
+        transaction = None
+
+        if cursor.lastrowid is not None:
+            transaction = self.get_transaction_with_id(cursor.lastrowid, connection)
+
+        self.close_data_store_connection()
+
+        return transaction

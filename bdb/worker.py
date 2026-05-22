@@ -49,7 +49,8 @@ def main():
     print("[2] Migrations")
     print("[any other key] to exit")
 
-    run_as = int(input("\nChoice: "))
+    string_input = input("\nChoice: ")
+    run_as = int(string_input)
 
     if run_as == 1:
         worker()

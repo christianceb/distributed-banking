@@ -48,9 +48,7 @@ class BasService:
             transaction.source_account_id = response_txn.source_account_id
             transaction.destination_account_id = response_txn.destination_account_id
             transaction.amount = response_txn.amount
-            transaction.bas = response_txn.bas
             transaction.status = response_txn.status
-            transaction.balance = response_txn.balance
             transaction.fees = response_txn.fees
             transaction.kind = response_txn.kind
             transaction.tries = response_txn.tries
@@ -61,11 +59,14 @@ class BasService:
         
         return None
 
-    def validate_payment_intent(self, token: str, recipient_account_id: int, amount: int):
+    def validate_and_get_payment_intent_fees(self, token: str, recipient_account_id: int, amount: int) -> Optional[int]:
         request = AppPaymentIntentRequest(token=token, recipient_account_id=recipient_account_id, amount=amount)
         response: EvaluatePaymentIntentResponse = self.stub.EvaluatePaymentIntent(request)
 
-        return response
+        if response.valid_payment_intent:
+            return response.fees
+
+        return None
 
     def post_payment_intent(self, token: str, recipient_account_id: int, amount: int, message: str = "") -> Optional[Transaction]:
         request = AppPostPaymentIntentRequest(token=token, recipient_account_id=recipient_account_id, amount=amount, message=message)

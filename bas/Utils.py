@@ -27,9 +27,9 @@ class FeeTier:
             percent_fee_amount = amount * self.decimal_percent
             
             if percent_fee_amount > self.fee_cap:
-                return self.fee_cap
+                return int(self.fee_cap)
             else:
-                return percent_fee_amount
+                return int(percent_fee_amount)
         else:
             return -1
 

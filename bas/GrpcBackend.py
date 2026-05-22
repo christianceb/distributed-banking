@@ -4,6 +4,7 @@ from BankingApp_pb2_grpc import BankingAppServicer
 from UserTokenService import UserToken, UserTokenService
 from BankingDatabaseService import BankingDatabaseService
 from Utils import calculate_fees
+from Models import TransactionModel
 
 class GrpcBackend(BankingAppServicer):
     data_service: BankingDatabaseService = None;
@@ -76,8 +77,11 @@ class GrpcBackend(BankingAppServicer):
         return response
 
     def validate_payment_intent(self, amount: int, recipient_account_id: int, user_token: Optional[UserToken]) -> bool:
+        # Prevent non-positive integer amounts
         if amount > 0:
+            # Prevent accounts from sending money to themselves
             if user_token and user_token.account_id != recipient_account_id:
+                # Prevent accounts from sending money to non-existent accounts
                 if self.data_service.account_by_id_exists(recipient_account_id):
                     return True
 
@@ -94,19 +98,29 @@ class GrpcBackend(BankingAppServicer):
             if valid_payment_intent:
                 fees = calculate_fees(amount=request.amount)
 
-        return EvaluatePaymentIntentResponse(valid_payment_intent=True, fees=fees)
+        return EvaluatePaymentIntentResponse(valid_payment_intent=valid_payment_intent, fees=fees)
 
     def PostPaymentIntent(self, request: AppPaymentIntentRequest, context) -> AppAccountDetailsResponse:
         user_token = self.ValidateToken(request.token)
-        fees = 0
-        valid_payment_intent = self.validate_payment_intent(request.amount, request.recipient_account_id, user_token)
-        transaction: Optional[Transaction] = None
+        response = AppAccountDetailsResponse()
+        
+        transaction: Optional[TransactionModel] = None
 
-        if valid_payment_intent:
-            fees = calculate_fees(amount=request.amount)
+        if user_token is not None:
+            fees = 0
+            valid_payment_intent = self.validate_payment_intent(request.amount, request.recipient_account_id, user_token)
+    
+            if valid_payment_intent:
+                fees = calculate_fees(amount=request.amount)
 
-            self.data_service.post_payment_intent()
+                transaction = self.data_service.post_payment_intent(
+                    user_token.account_id,
+                    request.recipient_account_id,
+                    fees,
+                    request.amount,
+                    request.message
+                )
 
-        response = AppAccountDetailsResponse(transaction=transaction)
+                response.transaction = transaction
 
-        return 
+        return response

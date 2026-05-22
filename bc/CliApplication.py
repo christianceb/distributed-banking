@@ -54,7 +54,7 @@ class CliApplication:
     def printAccountOverview(self):
         overview = self.bas_service.get_account_by_token(self.session_data.token)
 
-        print("Logged in as: " + self.session_data.user.username)
+        print("Logged in as: " + self.session_data.user.username + f" (User ID: {self.session_data.user_id}; Account ID: {self.session_data.account_id})")
         print("Balances as of: " + unix_timestamp_to_iso8601(unix_timestamp_s()))
         print("Account current balance: " + int_cents_to_localised(overview.current_balance))
         print("Account available balance: " + int_cents_to_localised(overview.available_balance))
@@ -158,7 +158,6 @@ class CliApplication:
             Source Account ID: {transaction.source_account_id}
             Destination Account ID: {transaction.destination_account_id}
             Status: {transaction.status}
-            Balance: {transaction.balance}
             Fees: {transaction.fees}
             Kind: {transaction.fees}
             Timestamp: {transaction.timestamp}
@@ -187,16 +186,16 @@ class CliApplication:
             
             message = input_message
 
-            payment_intent = self.bas_service.validate_payment_intent(self.session_data.token, recipient_account_id, transfer_amount)
+            payment_intent_fees = self.bas_service.validate_and_get_payment_intent_fees(self.session_data.token, recipient_account_id, transfer_amount)
 
-            if not payment_intent.valid_payment_intent:
-                print("Unable to continue with transaction. Either the recipient is invalid, or you do not have enough funds to make the transaction.")
+            if payment_intent_fees is None:
+                print("\nUnable to continue with transaction. Either the recipient is invalid, or you do not have enough funds to make the transaction.")
             else:
-                transfer_total = transfer_amount + payment_intent.fees
+                transfer_total = transfer_amount + payment_intent_fees
 
                 print("\nPayment will be sent to account with ID: " + str(recipient_account_id))
                 print("Transfer amount: " + int_cents_to_localised(transfer_amount))
-                print("Transfer fee: " + int_cents_to_localised(payment_intent.fees))
+                print("Transfer fee: " + int_cents_to_localised(payment_intent_fees))
                 print("Total transfer (incl fees): " + int_cents_to_localised(transfer_total))
                 print("Message: " + message)
 
