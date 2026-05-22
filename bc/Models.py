@@ -7,7 +7,6 @@ class Transaction:
     amount: int
     bas: str
     status: str
-    balance: int
     fees: int
     kind: str
     tries: int

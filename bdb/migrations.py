@@ -48,7 +48,6 @@ def clearMigrateSeed():
             amount integer not null,
             message text,
             status varchar(255) default 'PENDING' not null,
-            balance integer,
             fees integer,
             kind varchar(255) not null,
             tries integer default 0 not null,
