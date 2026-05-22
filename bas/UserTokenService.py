@@ -32,11 +32,11 @@ class UserTokenService:
         return user_token
 
     def FindToken(self, token: str) -> Optional[UserToken]:
-        user_token = None
+        found_token = None
 
         for user_token in self.user_tokens:
             if user_token.token == token:
-                user_token.token = token
+                found_token = user_token
                 break
 
-        return user_token
+        return found_token
