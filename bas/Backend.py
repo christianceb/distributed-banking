@@ -9,7 +9,7 @@ from bas.UserTokenService import UserTokenService
 
 
 class Backend:
-    port = "50051"
+    port = "10051"
     server: Server
     
     channel: Channel
@@ -20,7 +20,7 @@ class Backend:
         
         add_BankingAppServicer_to_server(
             GrpcBackend(
-                BankingDatabaseService("localhost:50061"),
+                BankingDatabaseService("localhost:10061"),
                 UserTokenService()
             ),
             self.server

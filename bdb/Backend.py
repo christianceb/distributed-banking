@@ -49,7 +49,7 @@ class UtilityInterceptor(grpc.ServerInterceptor):
         # print("After Hook")
 
 class Backend:
-    port = "50061"
+    port = "10061"
     server: Server
     
     channel: Channel
