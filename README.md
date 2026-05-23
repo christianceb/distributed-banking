@@ -86,3 +86,13 @@ Done.
 There are three applications that need to run in tandem here, requiring three different shells running at the same time with the `banking-env` virtual environment running.
 
 Running [`main.py`](./main.py) will give you the option to run either BDB, BAS and BC. It is recommended that you BDB > BAS > BC in sequence on separate shells.
+
+## Troubleshooting
+
+### _ERROR_MESSAGE_PORT_BINDING_FAILED (Failed to bind to address)
+
+This error has been observed on the UAT process of the application when run on Windows. This has not been observed on other platforms such as *nix.
+
+A fix has been made to make this run on Windows. But if this issue still still prevalent for some users, it can be simply mitigated by changing the ports used by the application. Currently, the ports used are and are defined in:
+- `10051` - Used by [BAS (Backend.ports)](./bas/Backend.py)
+- `10061` - Used by [BDB (Backend.ports)](./bas/Backend.py)
