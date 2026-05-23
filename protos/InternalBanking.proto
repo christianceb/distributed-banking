@@ -11,9 +11,6 @@ service InternalBanking {
 
   // Store Payment Intent as transaction
   rpc StorePaymentIntent (PaymentIntentRequest) returns (PaymentIntentResponse) {}
-
-  // Log something
-  rpc PostLog (LogRequest) returns (LogResponse) {}
 }
 
 // ---
@@ -34,11 +31,6 @@ message AccountByIdExistsRequest {
 message AccountTransactionRequest {
   uint64 account_id = 1;
   uint64 transaction_id = 2;
-}
-
-message LogRequest {
-  string kind = 1;
-  string message = 2;
 }
 
 message PaymentIntentRequest {
@@ -74,11 +66,6 @@ message TransactionsResponse {
   repeated Transaction transactions = 1;
 }
 
-message LogResponse {
-  bool success = 1;
-  Log log = 2;
-}
-
 message PaymentIntentResponse {
   bool success = 1;
   optional Transaction transaction = 2;
@@ -97,13 +84,6 @@ message Account {
   int64 current_balance = 3;
   int64 available_balance = 4;
   uint64 updated_at = 5;
-}
-
-message Log {
-  uint64 id = 1;
-  uint64 timestamp = 2;
-  string kind = 3;
-  string message = 4;
 }
 
 message Transaction {

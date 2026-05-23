@@ -57,17 +57,6 @@ def clearMigrateSeed():
     """)
     connection.commit()
 
-    cursor.execute("""
-        create table logs
-        (
-            id integer not null constraint accounts_id_pk primary key autoincrement,
-            kind varchar(255) not null,
-            message text not null,
-            timestamp unixepoch default (strftime('%s','now')) not null
-        );
-    """)
-    connection.commit()
-
     # Triggers
     cursor.execute("""
         CREATE TRIGGER update_account_updated_at UPDATE OF current_balance, available_balance ON accounts
