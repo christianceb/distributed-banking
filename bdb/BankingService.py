@@ -2,9 +2,9 @@ import sqlite3
 
 from sqlite3 import Connection
 from typing import Optional
-from User import User
-from Temporal import iso8601, unix_timestamp_s
-from dependencies import database
+from models.User import User
+from common.Temporal import iso8601, unix_timestamp_s
+from bdb.dependencies import database
 
 
 class BankingService:

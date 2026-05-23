@@ -47,15 +47,15 @@ python -m grpc_tools.protoc \
 # grpc_generated
 
 python -m grpc_tools.protoc \
-    -I ./protos \
-    --python_out=./grpc_generated \
-    --pyi_out=./grpc_generated \
-    --grpc_python_out=./grpc_generated \
+    -I grpc_generated=protos \
+    --python_out=. \
+    --pyi_out=. \
+    --grpc_python_out=. \
     ./protos/BankingApp.proto
 
 python -m grpc_tools.protoc \
-    -I ./protos \
-    --python_out=./grpc_generated \
-    --pyi_out=./grpc_generated \
-    --grpc_python_out=./grpc_generated \
+    -I grpc_generated=protos \
+    --python_out=. \
+    --pyi_out=. \
+    --grpc_python_out=. \
     ./protos/InternalBanking.proto

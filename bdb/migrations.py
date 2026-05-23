@@ -1,6 +1,6 @@
 import os.path
 
-from dependencies import database
+from bdb.dependencies import database
 
 database_file = "store.db"
 

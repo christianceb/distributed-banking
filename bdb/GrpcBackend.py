@@ -1,6 +1,6 @@
-from BankingService import BankingService
-from InternalBanking_pb2_grpc import InternalBankingServicer
-from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, AccountTransactionRequest, PaymentIntentRequest, PaymentIntentResponse, TransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
+from bdb.BankingService import BankingService
+from grpc_generated.InternalBanking_pb2_grpc import InternalBankingServicer
+from grpc_generated.InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, AccountTransactionRequest, PaymentIntentRequest, PaymentIntentResponse, TransactionsResponse, UserByCredentialsRequest, UserByCredentialsResponse
 
 
 class GrpcBackend(InternalBankingServicer):

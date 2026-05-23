@@ -1,9 +1,9 @@
 import sqlite3
 import time
 
-from BankingService import BankingService
-from dependencies import database
-from migrations import clearMigrateSeed
+from bdb.BankingService import BankingService
+from bdb.dependencies import database
+from bdb.migrations import clearMigrateSeed
 
 def worker_job(connection: sqlite3.Connection):
     banking_service = BankingService(connection)

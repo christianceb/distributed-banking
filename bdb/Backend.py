@@ -1,11 +1,10 @@
 import grpc
 from concurrent import futures
-from GrpcBackend import GrpcBackend
+from bdb.GrpcBackend import GrpcBackend
 from grpc import Channel, Server
-from InternalBanking_pb2_grpc import add_InternalBankingServicer_to_server
-
-from dependencies import database
-from worker import worker_job
+from grpc_generated.InternalBanking_pb2_grpc import add_InternalBankingServicer_to_server
+from bdb.dependencies import database
+from bdb.worker import worker_job
 
 
 class UtilityInterceptor(grpc.ServerInterceptor):
