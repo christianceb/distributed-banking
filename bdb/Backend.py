@@ -63,7 +63,7 @@ class Backend:
             self.server
         )
 
-        self.server.add_insecure_port("[::]:" + self.port)
+        self.server.add_insecure_port("0.0.0.0:" + self.port)
         
         self.server.start()
         
