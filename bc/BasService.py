@@ -5,7 +5,7 @@ import grpc
 
 from BankingApp_pb2_grpc import BankingAppStub
 from BankingApp_pb2 import AppTransaction, AppTransactionRequest, AppTransactionsResponse, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppPaymentIntentRequest, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentStoreResponse, AppPostPaymentIntentRequest
-from Models import TransactionModel
+from Models import PublicTransactionModel
 
 
 class BasService:
@@ -36,7 +36,7 @@ class BasService:
 
         return None
 
-    def get_transaction(self, token: str, transaction_id: int) -> Optional[TransactionModel]:
+    def get_transaction(self, token: str, transaction_id: int) -> Optional[PublicTransactionModel]:
         request: AppTransactionRequest = AppTransactionRequest(token=token, transaction_id=transaction_id)
         response: AppTransactionsResponse = self.stub.GetTransactionById(request)
 
@@ -56,7 +56,7 @@ class BasService:
 
         return None
 
-    def post_payment_intent(self, token: str, recipient_account_id: int, amount: int, message: str = "") -> Optional[TransactionModel]:
+    def post_payment_intent(self, token: str, recipient_account_id: int, amount: int, message: str = "") -> Optional[PublicTransactionModel]:
         request = AppPostPaymentIntentRequest(token=token, recipient_account_id=recipient_account_id, amount=amount, message=message)
         response: AppPaymentIntentStoreResponse = self.stub.PostPaymentIntent(request)
 
@@ -67,8 +67,8 @@ class BasService:
 
         return None
 
-    def from_protoc_transaction_to_object(self, protoc_transaction: AppTransaction) -> TransactionModel:
-        transaction = TransactionModel()
+    def from_protoc_transaction_to_object(self, protoc_transaction: AppTransaction) -> PublicTransactionModel:
+        transaction = PublicTransactionModel()
     
         transaction.id = protoc_transaction.id
         transaction.source_account_id = protoc_transaction.source_account_id

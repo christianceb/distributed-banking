@@ -1,11 +1,11 @@
-from concurrent import futures
-from BankingApp_pb2_grpc import add_BankingAppServicer_to_server
-from GrpcBackend import GrpcBackend
-from grpc import Channel, Server
-from UserTokenService import UserTokenService
 import grpc
 
-from BankingDatabaseService import BankingDatabaseService
+from concurrent import futures
+from grpc import Channel, Server
+from grpc_generated.BankingApp_pb2_grpc import add_BankingAppServicer_to_server
+from bas.BankingDatabaseService import BankingDatabaseService
+from bas.GrpcBackend import GrpcBackend
+from bas.UserTokenService import UserTokenService
 
 
 class Backend:

@@ -1,8 +1,9 @@
 import grpc
+
 from typing import Optional
-from InternalBanking_pb2_grpc import InternalBankingStub
-from InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, AccountTransactionRequest, TransactionsResponse, PaymentIntentRequest, PaymentIntentResponse, UserByCredentialsRequest, UserByCredentialsResponse
-from Models import TransactionModel
+from grpc_generated.InternalBanking_pb2_grpc import InternalBankingStub
+from grpc_generated.InternalBanking_pb2 import AccountByIdExistsRequest, AccountByIdExistsResponse, AccountByUserIdResponse, AccountByUserIdRequest, AccountTransactionRequest, TransactionsResponse, PaymentIntentRequest, PaymentIntentResponse, UserByCredentialsRequest, UserByCredentialsResponse
+from models.PublicTransactionModel import PublicTransactionModel
 
 
 class BankingDatabaseService:
@@ -30,26 +31,12 @@ class BankingDatabaseService:
 
         return response
 
-    def get_account_transaction_with_id(self, account_id: int, transaction_id: int) -> Optional[TransactionModel]:
+    def get_account_transaction_with_id(self, account_id: int, transaction_id: int) -> Optional[PublicTransactionModel]:
         request: AccountTransactionRequest = AccountTransactionRequest(account_id=account_id, transaction_id=transaction_id)
         response: TransactionsResponse = self.stub.GetAccountTransactionWithId(request)
 
         if len(response.transactions):
             return response.transactions[0]
-            # transaction = TransactionModel()
-            # response_txn = response.transactions[0]
-
-            # transaction.id = response_txn.id
-            # transaction.source_account_id = response_txn.source_account_id
-            # transaction.recipient_account_id = response_txn.recipient_account_id
-            # transaction.amount = response_txn.amount
-            # transaction.status = response_txn.status
-            # transaction.fees = response_txn.fees
-            # transaction.kind = response_txn.kind
-            # transaction.timestamp = response_txn.timestamp
-            # transaction.updated_at = response_txn.updated_at
-
-            # return transaction
 
         return None
 
@@ -66,14 +53,14 @@ class BankingDatabaseService:
             fees: int,
             amount: int,
             message: str
-        ) -> Optional[TransactionModel]:
+        ) -> Optional[PublicTransactionModel]:
         request: PaymentIntentRequest = PaymentIntentRequest(account_id=account_id, recipient_account_id=recipient_account_id, fees=fees, amount=amount, message=message)
         response: PaymentIntentResponse = self.stub.StorePaymentIntent(request)
 
         if response.transaction:
             response_txn = response.transaction
 
-            transaction = TransactionModel()
+            transaction = PublicTransactionModel()
 
             transaction.id = response_txn.id
             transaction.source_account_id = response_txn.source_account_id

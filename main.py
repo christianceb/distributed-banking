@@ -1,4 +1,5 @@
-from bdb.main import app
+from bdb.main import app as bdb_app
+from bas.main import app as bas_app
 
 
 def main():
@@ -15,11 +16,11 @@ def main():
     run_as = int(string_input)
 
     if run_as == 1:
-        app()
+        bdb_app()
     elif run_as == 2:
         pass
     elif run_as == 3:
-        pass
+        bas_app()
     elif run_as == 4:
         pass
 

@@ -1,4 +1,4 @@
-class TransactionModel:
+class PublicTransactionModel:
     id: int
     source_account_id: int
     recipient_account_id: int

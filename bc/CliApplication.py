@@ -3,7 +3,7 @@ from typing import Optional
 from BasService import BasService
 from CurrencyHelper import inputted_amount_to_cents, int_cents_to_localised
 from Temporal import unix_timestamp_s, unix_timestamp_to_iso8601
-from Models import SessionData, TransactionModel, User
+from Models import SessionData, PublicTransactionModel, User
 from Utils import render_txn_amount
 
 
@@ -150,7 +150,7 @@ class CliApplication:
 
             exit_menu_loop = self.MENU_EXIT
 
-    def print_transaction(self, transaction: TransactionModel):
+    def print_transaction(self, transaction: PublicTransactionModel):
         current_account_id = self.session_data.account_id
         fee_string = "\nFees: \t\t\t\t" + int_cents_to_localised(transaction.fees) if current_account_id == transaction.source_account_id else ""
         is_credit = transaction.recipient_account_id == current_account_id
@@ -241,3 +241,10 @@ Date/Time Processed: \t\t{unix_timestamp_to_iso8601(transaction.updated_at)}
                 choice = self.MENU_EXIT
 
                 input("\nPress [enter] to go back")
+
+class SessionData:
+    user_id: int
+    account_id: int
+    user: Optional[User]
+    account: Optional[Account]
+    token: str

@@ -1,5 +1,5 @@
 import logging
-from Backend import Backend
+from bas.Backend import Backend
 
 
 def app():

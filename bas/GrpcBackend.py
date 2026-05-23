@@ -1,10 +1,11 @@
 from typing import Optional
-from BankingApp_pb2 import AppPaymentIntentStoreResponse, AppTransactionRequest, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentRequest, AppTransactionsResponse
-from BankingApp_pb2_grpc import BankingAppServicer
-from UserTokenService import UserToken, UserTokenService
-from BankingDatabaseService import BankingDatabaseService
-from Utils import calculate_fees
-from Models import TransactionModel
+
+from grpc_generated.BankingApp_pb2 import AppPaymentIntentStoreResponse, AppTransactionRequest, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentRequest, AppTransactionsResponse
+from grpc_generated.BankingApp_pb2_grpc import BankingAppServicer
+from bas.UserTokenService import UserToken, UserTokenService
+from bas.BankingDatabaseService import BankingDatabaseService
+from bas.FeeHelper import calculate_fees
+from models.PublicTransactionModel import PublicTransactionModel
 
 class GrpcBackend(BankingAppServicer):
     data_service: BankingDatabaseService = None;
@@ -121,7 +122,7 @@ class GrpcBackend(BankingAppServicer):
         user_token = self.ValidateToken(request.token)
         response = AppPaymentIntentStoreResponse()
         
-        transaction: Optional[TransactionModel] = None
+        transaction: Optional[PublicTransactionModel] = None
 
         if user_token is not None:
             fees = 0
