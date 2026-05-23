@@ -1,10 +1,9 @@
-from typing import Optional
-
-from BasService import BasService
-from CurrencyHelper import inputted_amount_to_cents, int_cents_to_localised
-from Temporal import unix_timestamp_s, unix_timestamp_to_iso8601
-from Models import SessionData, PublicTransactionModel, User
-from Utils import render_txn_amount
+from bc.BasService import BasService
+from common.CurrencyHelper import inputted_amount_to_cents, int_cents_to_localised
+from common.Temporal import unix_timestamp_s, unix_timestamp_to_iso8601
+from models.User import User
+from models.SessionData import SessionData
+from models.PublicTransactionModel import PublicTransactionModel
 
 
 class CliApplication:
@@ -241,10 +240,3 @@ Date/Time Processed: \t\t{unix_timestamp_to_iso8601(transaction.updated_at)}
                 choice = self.MENU_EXIT
 
                 input("\nPress [enter] to go back")
-
-class SessionData:
-    user_id: int
-    account_id: int
-    user: Optional[User]
-    account: Optional[Account]
-    token: str

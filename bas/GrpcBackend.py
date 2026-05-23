@@ -8,7 +8,7 @@ from bas.FeeHelper import calculate_fees
 from models.PublicTransactionModel import PublicTransactionModel
 
 class GrpcBackend(BankingAppServicer):
-    data_service: BankingDatabaseService = None;
+    data_service: BankingDatabaseService = None
     user_token_service: UserTokenService = None
 
     def __init__(self, dataService, userTokenService):

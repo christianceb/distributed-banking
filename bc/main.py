@@ -1,6 +1,6 @@
 import logging
-from BasService import BasService
-from CliApplication import CliApplication
+from bc.BasService import BasService
+from bc.CliApplication import CliApplication
 
 
 def app():

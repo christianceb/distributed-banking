@@ -1,11 +1,10 @@
-from typing import Optional
-
-from grpc import Channel
 import grpc
 
-from BankingApp_pb2_grpc import BankingAppStub
-from BankingApp_pb2 import AppTransaction, AppTransactionRequest, AppTransactionsResponse, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppPaymentIntentRequest, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentStoreResponse, AppPostPaymentIntentRequest
-from Models import PublicTransactionModel
+from typing import Optional
+from grpc import Channel
+from grpc_generated.BankingApp_pb2_grpc import BankingAppStub
+from grpc_generated.BankingApp_pb2 import AppTransaction, AppTransactionRequest, AppTransactionsResponse, EvaluatePaymentIntentResponse, LoginRequest, LoginResponse, AppPaymentIntentRequest, AppAccountDetailsRequest, AppAccountDetailsResponse, AppPaymentIntentStoreResponse, AppPostPaymentIntentRequest
+from models.PublicTransactionModel import PublicTransactionModel
 
 
 class BasService:

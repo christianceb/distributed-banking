@@ -1,14 +1,17 @@
 from bdb.main import app as bdb_app
+from bdb.worker import worker, migrations
 from bas.main import app as bas_app
+from bc.main import app as bc_app
 
 
 def main():
     print("Run:\n")
 
     print("[1] BDB")
-    print("[2] BDB Migrations")
-    print("[3] BAS")
-    print("[4] BC")
+    print("[2] BAS")
+    print("[3] BC")
+    print("[4] BDB Migrations")
+    print("[5] BDB Worker (Advanced)")
 
     print("[any other key] to exit")
 
@@ -18,11 +21,13 @@ def main():
     if run_as == 1:
         bdb_app()
     elif run_as == 2:
-        pass
-    elif run_as == 3:
         bas_app()
+    elif run_as == 3:
+        bc_app()
     elif run_as == 4:
-        pass
+        migrations()
+    elif run_as == 5:
+        worker()
 
 if __name__ == "__main__":
     main()
