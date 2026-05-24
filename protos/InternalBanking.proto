@@ -47,7 +47,6 @@ message UserByCredentialsResponse {
   bool found = 1;
   optional User user = 2;
   optional Account account = 3;
-  repeated Transaction transactions = 4;
 }
 
 message GetUserByIdResponse {
