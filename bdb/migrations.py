@@ -83,7 +83,7 @@ def clearMigrateSeed():
         values
             ('bank', 'password'),
             ('primary', 'password1'),
-            ('secundus', 'password2');
+            ('secondary', 'password2');
     """)
     connection.commit()
 
