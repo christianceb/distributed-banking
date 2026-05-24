@@ -3,6 +3,7 @@ import sqlite3
 from sqlite3 import Connection
 from typing import Optional
 from models.User import User
+from bdb.Log import Log
 from common.Temporal import iso8601, unix_timestamp_s
 from bdb.dependencies import database
 
@@ -124,19 +125,16 @@ class BankingService:
         connection.commit()
 
         if cursor.lastrowid > 0:
-            print(
-                f"[{iso8601()}]: New transaction created",
-                {
-                    "id": cursor.lastrowid,
-                    "source_account_id": source_account_id,
-                    "recipient_account_id": id,
-                    "amount": amount,
-                    "fees": 0,
-                    "kind": "FEE",
-                    "timestamp": unix_timestamp_s(),
-                    "date_time": iso8601()
-                }
-            )
+            Log("New transaction created", {
+                "id": cursor.lastrowid,
+                "source_account_id": source_account_id,
+                "recipient_account_id": id,
+                "amount": amount,
+                "fees": 0,
+                "kind": "FEE",
+                "timestamp": unix_timestamp_s(),
+                "date_time": iso8601()
+            })
 
         # If no connection was passed, it means we created a connection and need to release it.
         # Otherwise, let the caller terminate it themselves
@@ -176,8 +174,8 @@ class BankingService:
                     (new_source_account_current_balance, source_account['id'])
                 )
 
-                print(
-                    f"[{iso8601()}]: Account balance for source account updated",
+                Log(
+                    "Account balance for source account updated",
                     {
                         "account_id": source_account['id'],
                         "from_current_balance": source_account['current_balance'],
@@ -201,16 +199,13 @@ class BankingService:
 
             connection.commit()
 
-            print(
-                f"[{iso8601()}]: Account balance for recipient account updated",
-                {
-                    "account_id": transaction['recipient_account_id'],
-                    "from_current_balance": recipient_account['current_balance'],
-                    "from_available_balance": recipient_account['available_balance'],
-                    "to_current_balance": new_recipient_current_balance,
-                    "to_available_balance": new_recipient_available_balance
-                }
-            )
+            Log("Account balance for recipient account updated", {
+                "account_id": transaction['recipient_account_id'],
+                "from_current_balance": recipient_account['current_balance'],
+                "from_available_balance": recipient_account['available_balance'],
+                "to_current_balance": new_recipient_current_balance,
+                "to_available_balance": new_recipient_available_balance
+            })
 
             tries = transaction['tries'] + 1
 
@@ -221,18 +216,17 @@ class BankingService:
 
             connection.commit()
 
-            print(
-                f"[{iso8601()}]: Transaction completed",
-                {
-                    "transaction_id": transaction['id'],
-                    "updated_at": transaction['updated_at'],
-                    "tries": tries,
-                }
-            )
+            Log("Transaction completed", {
+                "transaction_id": transaction['id'],
+                "updated_at": transaction['updated_at'],
+                "tries": tries,
+            })
 
             results['processed'] += 1
 
-        print("Jobs Processed: " + str(results['processed']))
+        Log("Transactions Processed", {
+            "count": str(results['processed'])
+        })
 
         self.close_data_store_connection()
 
@@ -297,8 +291,8 @@ class BankingService:
 
             connection.commit()
 
-            print(
-                f"[{iso8601()}]: Account balance for source account updated",
+            Log(
+                "Account balance for source account updated",
                 {
                     "account_id": account['id'],
                     "from_current_balance": account['current_balance'],
@@ -353,8 +347,8 @@ class BankingService:
         if cursor.lastrowid is not None:
             transaction = self.get_transaction_with_id(cursor.lastrowid, connection)
 
-            print(
-                f"[{iso8601()}]: New transaction created",
+            Log(
+                "New transaction created",
                 {
                     "id": cursor.lastrowid,
                     "source_account_id": account_id,
