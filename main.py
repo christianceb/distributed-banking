@@ -23,7 +23,7 @@ def main():
     elif run_as == 2:
         bas_app()
     elif run_as == 3:
-        string_input = input("Enter IP:Port of BAS server to connect to [localhost:10051]: ")
+        string_input = input("Enter IP:Port of BAS to connect to [localhost:10051]: ")
 
         if string_input == "":
             bc_app()
